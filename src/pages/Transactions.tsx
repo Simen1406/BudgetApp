@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import { Plus, Filter, Download, Upload, Search, Edit2, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { useTransactionStore } from '../stores/transactionStore';
 import { exportTransactionsToCSV, importTransactionsFromCSV } from '../utils/csvUtils';
 import TransactionModal from '../components/transactions/TransactionModal';
 import type { Transaction } from '../components/dashboard/RecentTransactions';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const Transactions = () => {
   const { transactions, addTransaction, addTransactions, deleteTransaction, updateTransaction } = useTransactionStore();
@@ -66,6 +67,10 @@ const Transactions = () => {
     }
     setIsModalOpen(false);
     setEditingTransaction(null);
+  };
+
+  const formatDate = (date: Date) => {
+    return isValid(date) ? format(date, 'MMM d, yyyy') : 'Invalid Date';
   };
 
   return (
@@ -197,7 +202,7 @@ const Transactions = () => {
               {filteredTransactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(transaction.date, 'MMM d, yyyy')}
+                    {formatDate(transaction.date)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -214,7 +219,7 @@ const Transactions = () => {
                     <span className={`text-sm font-medium ${
                       transaction.type === 'income' ? 'text-success-600' : 'text-danger-600'
                     }`}>
-                      {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

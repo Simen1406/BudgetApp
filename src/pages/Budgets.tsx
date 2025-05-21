@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBudgetStore } from '../stores/budgetStore';
 import BudgetModal from '../components/budgets/BudgetModal';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const Budgets = () => {
   const { budgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
@@ -81,18 +82,18 @@ const Budgets = () => {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div className="card">
           <h3 className="text-sm font-medium text-gray-500">Planned Budget</h3>
-          <p className="mt-2 text-2xl font-semibold text-gray-900">${totalPlanned.toFixed(2)}</p>
+          <p className="mt-2 text-2xl font-semibold text-gray-900">{formatCurrency(totalPlanned)}</p>
         </div>
         
         <div className="card">
           <h3 className="text-sm font-medium text-gray-500">Actual Spending</h3>
-          <p className="mt-2 text-2xl font-semibold text-gray-900">${totalActual.toFixed(2)}</p>
+          <p className="mt-2 text-2xl font-semibold text-gray-900">{formatCurrency(totalActual)}</p>
         </div>
         
         <div className="card">
           <h3 className="text-sm font-medium text-gray-500">Difference</h3>
           <p className={`mt-2 text-2xl font-semibold ${totalPlanned - totalActual >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
-            ${Math.abs(totalPlanned - totalActual).toFixed(2)}
+            {formatCurrency(Math.abs(totalPlanned - totalActual))}
             {totalPlanned - totalActual >= 0 ? ' under budget' : ' over budget'}
           </p>
         </div>
@@ -136,24 +137,20 @@ const Budgets = () => {
                       <span className="text-sm font-medium text-gray-900">{budget.category}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${budget.plannedAmount.toFixed(2)}
+                      {formatCurrency(budget.plannedAmount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${budget.actualAmount.toFixed(2)}
+                      {formatCurrency(budget.actualAmount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm font-medium ${
-                        isOverBudget ? 'text-danger-600' : 'text-success-600'
-                      }`}>
-                        {isOverBudget ? '-' : '+'} ${Math.abs(difference).toFixed(2)}
+                      <span className={`text-sm font-medium ${isOverBudget ? 'text-danger-600' : 'text-success-600'}`}>
+                        {isOverBudget ? '-' : '+'} {formatCurrency(Math.abs(difference))}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div 
-                          className={`h-2.5 rounded-full ${
-                            isOverBudget ? 'bg-danger-600' : 'bg-success-600'
-                          }`}
+                          className={`h-2.5 rounded-full ${isOverBudget ? 'bg-danger-600' : 'bg-success-600'}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         ></div>
                       </div>

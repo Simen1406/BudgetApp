@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 Chart.register(...registerables);
 
@@ -90,7 +91,7 @@ const BudgetSummary = () => {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <p className="text-xs text-gray-500">Monthly spent</p>
-            <p className="text-xl font-semibold text-gray-900">$1,250</p>
+            <p className="text-xl font-semibold text-gray-900">{formatCurrency(1250)}</p>
           </div>
         </div>
       </div>
@@ -98,7 +99,7 @@ const BudgetSummary = () => {
       <div className="mt-6">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">Monthly budget</span>
-          <span className="font-medium text-gray-900">$2,000</span>
+          <span className="font-medium text-gray-900">{formatCurrency(2000)}</span>
         </div>
         
         <div className="mt-2 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -106,7 +107,7 @@ const BudgetSummary = () => {
         </div>
         
         <div className="mt-2 flex items-center justify-between text-sm">
-          <span className="text-success-600 font-medium">$750 remaining</span>
+          <span className="text-success-600 font-medium">{formatCurrency(750)} remaining</span>
           <span className="text-gray-500">62.5% spent</span>
         </div>
       </div>

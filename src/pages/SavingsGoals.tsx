@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useSavingsStore } from '../stores/savingsStore';
 import SavingsGoalModal from '../components/savings/SavingsGoalModal';
 import AddFundsModal from '../components/savings/AddFundsModal';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const SavingsGoals = () => {
   const { goals, addGoal, updateGoal, deleteGoal, addFunds } = useSavingsStore();
@@ -84,7 +85,7 @@ const SavingsGoals = () => {
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Overall Progress</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Saved ${totalSaved.toFixed(2)} of ${totalTarget.toFixed(2)}
+              Saved {formatCurrency(totalSaved)} of {formatCurrency(totalTarget)}
             </p>
           </div>
           
@@ -177,15 +178,15 @@ const SavingsGoals = () => {
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-gray-500">Saved</p>
-                    <p className="text-lg font-semibold text-gray-900">${goal.savedAmount}</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(goal.savedAmount)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Target</p>
-                    <p className="text-lg font-semibold text-gray-900">${goal.targetAmount}</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(goal.targetAmount)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Remaining</p>
-                    <p className="text-lg font-semibold text-gray-900">${remaining}</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(remaining)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Days Left</p>

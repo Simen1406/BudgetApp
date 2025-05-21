@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 interface SavingsGoal {
   id: string;
@@ -65,17 +66,17 @@ const SavingsGoalsList = () => {
               
               <div className="mt-4 flex items-center justify-between text-sm">
                 <span className="text-gray-500">Saved</span>
-                <span className="font-medium text-gray-900">${goal.savedAmount}</span>
+                <span className="font-medium text-gray-900">{formatCurrency(goal.savedAmount)}</span>
               </div>
               
               <div className="mt-1 flex items-center justify-between text-sm">
                 <span className="text-gray-500">Target</span>
-                <span className="font-medium text-gray-900">${goal.targetAmount}</span>
+                <span className="font-medium text-gray-900">{formatCurrency(goal.targetAmount)}</span>
               </div>
               
               <div className="mt-1 flex items-center justify-between text-sm">
                 <span className="text-gray-500">Remaining</span>
-                <span className="font-medium text-gray-900">${remaining}</span>
+                <span className="font-medium text-gray-900">{formatCurrency(goal.targetAmount - goal.savedAmount)}</span>
               </div>
             </div>
           );

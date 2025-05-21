@@ -14,7 +14,7 @@ def clean_bank_statement(input_path: str, output_path: str):
 
     
     #Change from norwegian to english column names
-    df.rename(columns={'Utført dato': 'date', 'Beløp ut': 'money out', 'Type' : 'type', }, inplace=True)
+    df.rename(columns={'Utført dato': 'date', 'Beløp ut': 'money out', 'Type' : 'type', 'Beløp inn' : 'income'}, inplace=True)
     df.dropna(subset=['date', 'money out'], inplace=True)
 
     #adds the category column 
@@ -23,13 +23,25 @@ def clean_bank_statement(input_path: str, output_path: str):
 
     #adds together all the amounts from money out column
     df["money out"] = pd.to_numeric(df["money out"],errors="coerce")
+    df['income'] = pd.to_numeric(df.get('income', 0), errors='coerce')
     total_money_out = df["money out"].sum()
+    total_money_in = df["income"].sum()
+
+     # Assign category based on whether money out exists
+    df['category'] = df['money out'].apply(
+        lambda x: 'expense' if pd.notna(x) and x < 0 else 'income'
+        )
+       
+     # Reorder columns explicitly and adds column for category
+    export_columns = ['date', 'type', 'income', 'money out', 'category']
+    df = df[[col for col in export_columns if col in df.columns]]
 
     #creates a new row for the total sum
     total_row = pd.DataFrame([{
         "date": "Money out this month",
         "money out": total_money_out,
-        "type" : "Total"
+        "type" : "Total",
+        "category" : ""
         }])
     df = pd.concat([df, total_row], ignore_index=True)
 

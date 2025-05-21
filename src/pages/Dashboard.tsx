@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CreditCard, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatCurrency } from '../utils/formatCurrency';
 
 // Components
 import StatCard from '../components/dashboard/StatCard';
@@ -77,21 +78,21 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Income"
-          value={`$${totalIncome.toFixed(2)}`}
+          value={formatCurrency(totalIncome)}
           icon={<TrendingUp className="h-6 w-6 text-success-600" />}
           change={+4.75}
           trend="up"
         />
         <StatCard
           title="Total Expenses"
-          value={`$${totalExpenses.toFixed(2)}`}
+          value={formatCurrency(totalExpenses)}
           icon={<TrendingDown className="h-6 w-6 text-danger-600" />}
           change={-2.1}
           trend="down"
         />
         <StatCard
           title="Net Savings"
-          value={`$${netSavings.toFixed(2)}`}
+          value={formatCurrency(netSavings)}
           icon={<DollarSign className="h-6 w-6 text-primary-600" />}
           change={+12.4}
           trend="up"

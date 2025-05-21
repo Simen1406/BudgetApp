@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 export interface Transaction {
   id: string;
@@ -53,7 +54,7 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
                   <div className={`text-sm font-medium ${
                     transaction.type === 'income' ? 'text-success-600' : 'text-danger-600'
                   }`}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                    {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                   </div>
                 </div>
               </li>

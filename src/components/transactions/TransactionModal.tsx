@@ -29,7 +29,10 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
   const [type, setType] = useState<'income' | 'expense'>(transaction?.type || 'expense');
   const [category, setCategory] = useState(transaction?.category || '');
   const [amount, setAmount] = useState(transaction?.amount?.toString() || '');
-  const [date, setDate] = useState(transaction?.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(
+    transaction?.date?.toISOString().split('T')[0] || 
+    new Date().toISOString().split('T')[0]
+  );
   const [note, setNote] = useState(transaction?.note || '');
 
   useEffect(() => {
@@ -39,6 +42,12 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
       setAmount(transaction.amount.toString());
       setDate(transaction.date.toISOString().split('T')[0]);
       setNote(transaction.note || '');
+    } else {
+      setType('expense');
+      setCategory('');
+      setAmount('');
+      setDate(new Date().toISOString().split('T')[0]);
+      setNote('');
     }
   }, [transaction]);
 
@@ -77,7 +86,10 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
                   type="radio"
                   value="income"
                   checked={type === 'income'}
-                  onChange={(e) => setType(e.target.value as 'income' | 'expense')}
+                  onChange={(e) => {
+                    setType(e.target.value as 'income' | 'expense');
+                    setCategory(''); // Reset category when type changes
+                  }}
                   className="mr-2"
                 />
                 Income
@@ -87,7 +99,10 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
                   type="radio"
                   value="expense"
                   checked={type === 'expense'}
-                  onChange={(e) => setType(e.target.value as 'income' | 'expense')}
+                  onChange={(e) => {
+                    setType(e.target.value as 'income' | 'expense');
+                    setCategory(''); // Reset category when type changes
+                  }}
                   className="mr-2"
                 />
                 Expense
@@ -138,13 +153,14 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
           </div>
 
           <div>
-            <label htmlFor="note" className="form-label">Note (optional)</label>
-            <textarea
+            <label htmlFor="note" className="form-label">Transaction Type</label>
+            <input
               id="note"
+              type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="form-input"
-              rows={3}
+              placeholder="e.g., VISA, Bank Transfer, etc."
             />
           </div>
 

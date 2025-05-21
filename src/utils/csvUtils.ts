@@ -1,15 +1,16 @@
 import { Transaction } from '../components/dashboard/RecentTransactions';
+import { isValid, parse } from 'date-fns';
 
 export const exportTransactionsToCSV = (transactions: Transaction[]) => {
-  const headers = ['Date', 'Type', 'Category', 'Amount', 'Note'];
+  const headers = ['date', 'type', 'income', 'money out', 'category'];
   const csvContent = [
     headers.join(','),
     ...transactions.map(t => [
       new Date(t.date).toISOString().split('T')[0],
-      t.type,
-      t.category,
-      t.amount,
-      t.note || ''
+      t.note || '', // Using note field for transaction type
+      t.type === 'income' ? t.amount.toFixed(2) : '',
+      t.type === 'expense' ? t.amount.toFixed(2) : '',
+      t.category
     ].join(','))
   ].join('\n');
 
@@ -28,21 +29,50 @@ export const importTransactionsFromCSV = (file: File): Promise<Transaction[]> =>
       try {
         const text = event.target?.result as string;
         const lines = text.split('\n');
-        const headers = lines[0].split(',');
+        const headers = lines[0].toLowerCase().split(',');
         
+        // Find the relevant column indexes
+        const dateIndex = headers.indexOf('date');
+        const typeIndex = headers.indexOf('type');
+        const incomeIndex = headers.indexOf('income');
+        const moneyOutIndex = headers.indexOf('money out');
+        const categoryIndex = headers.indexOf('category');
+        
+        if (dateIndex === -1 || typeIndex === -1 || (incomeIndex === -1 && moneyOutIndex === -1)) {
+          throw new Error('Required columns not found in CSV');
+        }
+
         const transactions: Transaction[] = lines.slice(1)
-          .filter(line => line.trim())
+          .filter(line => line.trim() && !line.toLowerCase().includes('money out this month'))
           .map(line => {
             const values = line.split(',');
+            const dateStr = values[dateIndex].trim();
+            const transactionType = values[typeIndex].trim();
+            const income = parseFloat(values[incomeIndex] || '0');
+            const moneyOut = parseFloat(values[moneyOutIndex] || '0');
+            const category = values[categoryIndex]?.trim() || 'Uncategorized';
+            
+            // Try different date formats
+            let date = parse(dateStr, 'yyyy-MM-dd', new Date());
+            if (!isValid(date)) {
+              date = parse(dateStr, 'dd.MM.yyyy', new Date());
+            }
+            
+            if (!isValid(date)) {
+              console.warn(`Invalid date found: ${dateStr}. Skipping transaction.`);
+              return null;
+            }
+
             return {
               id: crypto.randomUUID(),
-              date: new Date(values[0]),
-              type: values[1] as 'income' | 'expense',
-              category: values[2],
-              amount: parseFloat(values[3]),
-              note: values[4]
+              date,
+              type: income > 0 ? 'income' : 'expense',
+              amount: income > 0 ? income : moneyOut,
+              category,
+              note: transactionType // Store the transaction type in the note field
             };
-          });
+          })
+          .filter((t): t is Transaction => t !== null);
           
         resolve(transactions);
       } catch (error) {
