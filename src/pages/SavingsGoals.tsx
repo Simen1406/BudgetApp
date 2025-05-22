@@ -5,6 +5,7 @@ import { useSavingsStore } from '../stores/savingsStore';
 import SavingsGoalModal from '../components/savings/SavingsGoalModal';
 import AddFundsModal from '../components/savings/AddFundsModal';
 import { formatCurrency } from '../utils/formatCurrency';
+import { useAuth } from '../hooks/useAuth';
 
 const SavingsGoals = () => {
   const { goals, addGoal, updateGoal, deleteGoal, addFunds } = useSavingsStore();
@@ -12,6 +13,7 @@ const SavingsGoals = () => {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
+  const { user } = useAuth();
   
   // Sort goals based on selected criterion
   const sortedGoals = [...goals].sort((a, b) => {
@@ -47,11 +49,21 @@ const SavingsGoals = () => {
     }
   };
 
-  const handleSaveGoal = (goalData: Omit<typeof goals[0], 'id' | 'createdAt'>) => {
+  const handleSaveGoal = (goalData) => {
+    console.log("handlesaveGoal called with:", goalData)
+
     if (selectedGoal) {
       updateGoal(selectedGoal.id, goalData);
     } else {
-      addGoal(goalData);
+      if (user?.id) {
+        console.log('Saving new goal:', goalData);
+        console.log('User ID:', user?.id);
+
+
+        addGoal(goalData, user.id);
+      } else {
+        console.error("No user ID found. Cannot save saving goal")
+      }
     }
   };
 

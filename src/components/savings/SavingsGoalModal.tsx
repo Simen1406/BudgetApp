@@ -38,6 +38,9 @@ const SavingsGoalModal = ({ isOpen, onClose, onSave, goal }: SavingsGoalModalPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('💾 handleSubmit triggered');
+
     onSave({
       name,
       targetAmount: parseFloat(targetAmount),

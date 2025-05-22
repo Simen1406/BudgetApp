@@ -15,24 +15,29 @@ import NotFound from './pages/NotFound';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import LoadingScreen from './components/ui/LoadingScreen';
+import { useSavingsStore } from './stores/savingsStore';
 
 function App() {
   const { user, isGuest, isLoading } = useAuth();
   const [appReady, setAppReady] = useState(false);
+  const { fetchGoals } = useSavingsStore();
 
   useEffect(() => {
-    // Simulate initial app loading
-    const timer = setTimeout(() => {
-      setAppReady(true);
-    }, 1000);
+  // Simulate initial app loading
+  const timer = setTimeout(() => {
+    setAppReady(true);
+  }, 1000);
 
-    return () => clearTimeout(timer);
-  }, []);
+  return () => clearTimeout(timer);
+}, []);
 
-  if (!appReady || isLoading) {
-    return <LoadingScreen />;
-  }
+  useEffect(() => {
+    if (user && appReady && !isGuest) {
+      fetchGoals(user.id);
+    }
+  }, [user, appReady, isGuest]);
 
+  
   return (
     <Routes>
       {/* Public routes */}
