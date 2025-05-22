@@ -15,18 +15,13 @@ const SavingsGoals = () => {
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
   const { user } = useAuth();
   
+  
   // Sort goals based on selected criterion
   const sortedGoals = [...goals].sort((a, b) => {
-    if (sortBy === 'name') {
-      return a.name.localeCompare(b.name);
-    } else if (sortBy === 'progress') {
-      const progressA = (a.savedAmount / a.targetAmount) * 100;
-      const progressB = (b.savedAmount / b.targetAmount) * 100;
-      return progressB - progressA;
-    } else { // deadline
-      return a.deadline.getTime() - b.deadline.getTime();
-    }
-  });
+    const progressA = (a.savedAmount / a.targetAmount) * 100;
+    const progressB = (b.savedAmount / b.targetAmount) * 100;
+    return progressB - progressA;
+    });
   
   // Calculate total savings
   const totalSaved = goals.reduce((sum, goal) => sum + goal.savedAmount, 0);
