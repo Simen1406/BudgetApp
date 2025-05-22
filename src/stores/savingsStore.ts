@@ -4,11 +4,11 @@ import { supabase } from '../lib/supabase';
 // Define the savings goal type based on DB structure
 export type SavingsGoal = {
   id: string;
-  title: string; // name of the goal
-  targetAmount: number;
-  currentAmount: number;
   user_id: string;
-  created_at : date;
+  name: string; // name of the goal
+  targetAmount: number;
+  savedAmmount: number;
+  deadline : Date;
 };
 
 // Zustand store shape
@@ -45,30 +45,29 @@ export const useSavingsStore = create<SavingsStore>((set, get) => ({
 
   // Add a new goal for the logged-in user
   addGoal: async (goal, userId) => {
-    console.log("saving goal:", goal, "for user", userId);
+  console.log("saving goal:", goal, "for user", userId);
 
-    const { data, error } = await supabase
-      .from('savings_goals')
-      .insert([{...goal, user_id : userId }])
-      .select();
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .insert([{ ...goal, user_id: userId }])
+    .select();
 
-    if (error) {
-      console.error('Error adding goal to supabase:', error);
-    } else {
-    console.log('Saved goal:', data);
-    set((state) => ({ goals: [...state.goals, ...data] }));
+  if (error) {
+    console.error('❌ Error adding goal to Supabase:', error);
+    return;
+  }
 
-    if (!error && data) {
-      //convert deadline from string to date
-      const normalized = data.map(g => ({
-        ...g,
-        deadline: new Date(g.deadline),
-      }));
+  if (data) {
+    console.log('✅ Saved goal:', data);
 
-      set((state) => ({ goals: [...state.goals, ...normalized]}));
-    } else {
-      console.error("supabase insert error:", error)
-    }
+    const normalized = data.map(g => ({
+      ...g,
+      deadline: new Date(g.deadline), // convert to Date so UI doesn't crash
+    }));
+
+    set((state) => ({
+      goals: [...state.goals, ...normalized],
+    }));
   }
 },
 
