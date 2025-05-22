@@ -15,6 +15,7 @@ interface BudgetStore {
   deleteBudget: (id: string) => void;
 }
 
+/* different starting budgets just for show. These will appear on login for all new users. */ 
 export const useBudgetStore = create<BudgetStore>((set) => ({
   budgets: [
     {
@@ -39,6 +40,8 @@ export const useBudgetStore = create<BudgetStore>((set) => ({
       month: new Date(),
     },
   ],
+  
+  /* Creation, update, deletion of budgets by user */
   
   addBudget: (budget) => set((state) => ({
     budgets: [...state.budgets, { ...budget, id: crypto.randomUUID() }]
