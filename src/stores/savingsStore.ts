@@ -73,57 +73,64 @@ export const useSavingsStore = create<SavingsStore>((set, get) => ({
 },
 
   // Update goal locally and in Supabase
-  updateGoal: async (id, updates) => {
-    const { error } = await supabase
-      .from('savings_goals')
-      .update(updates)
-      .eq('id', id);
+  updateGoal: async (id: string, updates) => {
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .update({
+      ...updates,
+      deadline: new Date(updates.deadline).toISOString(), // ensure correct format
+    })
+    .eq('id', id)
+    .select();
 
-    if (error) {
-      console.error('Error updating goal:', error);
-    } else {
-      set((state) => ({
-        goals: state.goals.map(goal => goal.id === id ? { ...goal, ...updates } : goal)
-      }));
-    }
-  },
+  if (!error && data) {
+    set((state) => ({
+      goals: state.goals.map((g) =>
+        g.id === id ? { ...data[0], deadline: new Date(data[0].deadline) } : g
+      ),
+    }));
+  } else {
+    console.error('Failed to update goal:', error);
+  }
+},
 
   // Delete goal from local state and Supabase
-  deleteGoal: async (id) => {
+  deleteGoal: async (id: string) => {
     const { error } = await supabase
       .from('savings_goals')
       .delete()
       .eq('id', id);
 
-    if (error) {
-      console.error('Error deleting goal:', error);
-    } else {
+    if (!error) {
       set((state) => ({
-        goals: state.goals.filter(goal => goal.id !== id)
+        goals: state.goals.filter((g) => g.id !== id),
       }));
-    }
-  },
+  } else {
+    console.error("failed to delete goal:", error)
+  }
+},
 
   // Add funds to an existing goal
-  addFunds: async (id, amount) => {
-    const goal = get().goals.find(goal => goal.id === id);
-    if (!goal) return;
+  addFunds: async (id: string, amount: number) => {
+  const goal = get().goals.find((g) => g.id === id);
+  if (!goal) return;
 
-    const newAmount = goal.currentAmount + amount;
+  const newAmount = goal.savedAmount + amount;
 
-    const { error } = await supabase
-      .from('savings_goals')
-      .update({ currentAmount: newAmount })
-      .eq('id', id);
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .update({ savedAmount: newAmount })
+    .eq('id', id)
+    .select();
 
-    if (error) {
-      console.error('Error adding funds:', error);
-    } else {
-      set((state) => ({
-        goals: state.goals.map(g =>
-          g.id === id ? { ...g, currentAmount: newAmount } : g
-        )
-      }));
-    }
+  if (!error && data) {
+    set((state) => ({
+      goals: state.goals.map((g) =>
+        g.id === id ? { ...data[0], deadline: new Date(data[0].deadline) } : g
+      ),
+    }));
+  } else {
+    console.error('Failed to add funds to goal:', error);
   }
+}
 }));
