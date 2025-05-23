@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { Toaster } from 'react-hot-toast';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -39,6 +40,10 @@ function App() {
 
   
   return (
+  <>
+
+    <Toaster position="top-right" />
+
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={(user || isGuest) ? <Navigate to="/dashboard" /> : <Login />} />
@@ -60,6 +65,7 @@ function App() {
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+  </>
   );
 }
 

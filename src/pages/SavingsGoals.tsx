@@ -6,6 +6,7 @@ import SavingsGoalModal from '../components/savings/SavingsGoalModal';
 import AddFundsModal from '../components/savings/AddFundsModal';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useAuth } from '../hooks/useAuth';
+import { toast} from "react-hot-toast"
 
 const SavingsGoals = () => {
   const { goals, addGoal, updateGoal, deleteGoal, addFunds } = useSavingsStore();
@@ -39,7 +40,9 @@ const SavingsGoals = () => {
 
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this savings goal?')) {
-      deleteGoal(id);
+      deleteGoal(id)
+      .then(() => toast.success("deleted savings goal."))
+      .catch(() => toast.error("failed to delete savings goal."));
     }
   };
 
@@ -51,15 +54,27 @@ const SavingsGoals = () => {
     }) => {
     console.log("handlesaveGoal called with:", goalData)
 
+    //Check if saving goal with same name/id exist and if it appears display error message in the UI
+    const nameExists = goals.some(g => g.name.toLocaleLowerCase() === goalData.name.toLocaleLowerCase());
+
+    if (!selectedGoal && nameExists) {
+      toast.error("Goal with this name already exists.");
+      return;
+    }
+
     if (selectedGoal) {
-      updateGoal(selectedGoal.id, goalData);
+      updateGoal(selectedGoal.id, goalData)
+      .then(() => toast.success("Goal updatet successfully."))
+      .catch(() => toast.error("Failed to updated goal"));
     } else {
       if (user?.id) {
         console.log('Saving new goal:', goalData);
         console.log('User ID:', user?.id);
 
 
-        addGoal(goalData, user.id);
+        addGoal(goalData, user.id)
+        .then(() => toast.success("New goal added."))
+        .catch(() => toast.error("failed to add goal."));
       } else {
         console.error("No user ID found. Cannot save savings goal")
       }
@@ -68,7 +83,9 @@ const SavingsGoals = () => {
 
   const handleAddFundsSave = (amount: number) => {
     if (selectedGoal) {
-      addFunds(selectedGoal.id, amount);
+      addFunds(selectedGoal.id, amount)
+      .then(() => toast.success("added funds successfully."))
+      .catch(() => toast.error("failed to add funds."));
     }
   };
 
