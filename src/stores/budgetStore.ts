@@ -1,59 +1,92 @@
 import { create } from 'zustand';
+import { supabase } from '../lib/supabase';
+import BudgetModal from '../components/budgets/BudgetModal';
 
-interface Budget {
+export type Budget = {
   id: string;
-  category: string;
-  plannedAmount: number;
-  actualAmount: number;
-  month: Date;
-}
+  user_id: string;
+  name: string;
+  plannedBudget: number;
+  moneySpent: number;
+  month: string;
+  is_recurring: boolean;
+};
 
-interface BudgetStore {
+
+type BudgetStore = {
   budgets: Budget[];
-  addBudget: (budget: Omit<Budget, 'id'>) => void;
-  updateBudget: (id: string, updates: Partial<Budget>) => void;
-  deleteBudget: (id: string) => void;
-}
+  fetchBudgets: (userId: string, month: string) => Promise<void>;
+  addBudget: (budget: Omit<Budget, 'id' | "user_id">, userId: string) => Promise<void>;
+  updateBudget: (id: string, updates: Partial<Budget>) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
+};
 
-// different starting budgets just for show. These will appear on login for all new users.  
+
 export const useBudgetStore = create<BudgetStore>((set) => ({
-  budgets: [
-    {
-      id: '1',
-      category: 'Housing',
-      plannedAmount: 1200,
-      actualAmount: 1200,
-      month: new Date(),
-    },
-    {
-      id: '2',
-      category: 'Food',
-      plannedAmount: 500,
-      actualAmount: 430,
-      month: new Date(),
-    },
-    {
-      id: '3',
-      category: 'Transportation',
-      plannedAmount: 200,
-      actualAmount: 180,
-      month: new Date(),
-    },
-  ],
+  budgets: [],
+
+
+  //fetch budgets
+  fetchBudgets: async (userId, month) => {
+    const { data, error} = await supabase
+    .from('budgets')
+    .select("*")
+    .eq('user_id', userId)
+    .or(`month.eq.${month},is_recurring.eq.true`)
+
+    if (!error && data) {
+      set({ budgets: data });
+    } else {
+      console.error("failed to fetch budgets:", error)
+    }
+  },
   
   // Creation, update, deletion of budgets by user 
+  addBudget: async (budget, userId) => {
+    const { data, error} = await supabase
+      .from("budgets")
+      .insert([{...budget, user_id: userId}])
+      .select();
+
+    if (!error && data) {
+      set((state) => ({
+        budgets: [...state.budgets, ...data],
+      }));
+    } else {
+      console.error("failed to add budget:", error);
+    }
+  },
+
+  updateBudget: async (id, updates) => {
+    const { data, error } = await supabase
+      .from('budgets')
+      .update(updates)
+      .eq('id', id)
+      .select();
+
+    if (!error && data) {
+      set((state) => ({
+        budgets: state.budgets.map((b) =>
+          b.id === id ? data[0] : b
+        ),
+      }));
+    } else {
+      console.error('Error updating budget:', error);
+    }
+  },
   
-  addBudget: (budget) => set((state) => ({
-    budgets: [...state.budgets, { ...budget, id: crypto.randomUUID() }]
-  })),
-  
-  updateBudget: (id, updates) => set((state) => ({
-    budgets: state.budgets.map(budget => 
-      budget.id === id ? { ...budget, ...updates } : budget
-    )
-  })),
-  
-  deleteBudget: (id) => set((state) => ({
-    budgets: state.budgets.filter(budget => budget.id !== id)
-  }))
+  deleteBudget: async (id) => {
+    const { error } = await supabase
+      .from('budgets')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      set((state) => ({
+        budgets: state.budgets.filter((b) => b.id !== id),
+      }));
+    } else {
+      console.error('Error deleting budget:', error);
+    }
+  },
 }));

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBudgetStore } from '../stores/budgetStore';
@@ -6,16 +7,25 @@ import BudgetModal from '../components/budgets/BudgetModal';
 import { formatCurrency } from '../utils/formatCurrency';
 
 const Budgets = () => {
-  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
+  const { budgets, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<typeof budgets[0] | null>(null);
+  const { user } = useAuth();
   
   const monthName = format(currentMonth, 'MMMM yyyy');
+
+  //fetch budgets
+  useEffect(() => {
+    if (user) {
+      const formattedMonth = currentMonth.toISOString().slice(0, 7); //collects month and year: "2025-02"
+      fetchBudgets(user.id, formattedMonth);
+    }
+  }, [user, currentMonth]);
   
   // Calculate totals
-  const totalPlanned = budgets.reduce((sum, budget) => sum + budget.plannedAmount, 0);
-  const totalActual = budgets.reduce((sum, budget) => sum + budget.actualAmount, 0);
+  const totalPlanned = budgets.reduce((sum, budget) => sum + budget.plannedBudget, 0);
+  const totalActual = budgets.reduce((sum, budget) => sum + budget.moneySpent, 0);
 
   const handleEdit = (budget: typeof budgets[0]) => {
     setSelectedBudget(budget);
@@ -32,7 +42,7 @@ const Budgets = () => {
     if (selectedBudget) {
       updateBudget(selectedBudget.id, budgetData);
     } else {
-      addBudget(budgetData);
+      addBudget(budgetData, user.id);
     }
   };
   
@@ -86,7 +96,7 @@ const Budgets = () => {
         </div>
         
         <div className="card">
-          <h3 className="text-sm font-medium text-gray-500">Actual Spending</h3>
+          <h3 className="text-sm font-medium text-gray-500">Money Spent</h3>
           <p className="mt-2 text-2xl font-semibold text-gray-900">{formatCurrency(totalActual)}</p>
         </div>
         
@@ -106,13 +116,13 @@ const Budgets = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
+                  Name
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Planned
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actual
+                  Spent
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Difference
@@ -127,20 +137,20 @@ const Budgets = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {budgets.map((budget) => {
-                const difference = budget.plannedAmount - budget.actualAmount;
-                const percentage = (budget.actualAmount / budget.plannedAmount) * 100;
+                const difference = budget.plannedBudget - budget.plannedBudget;
+                const percentage = (budget.moneySpent / budget.moneySpent) * 100;
                 const isOverBudget = difference < 0;
                 
                 return (
                   <tr key={budget.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">{budget.category}</span>
+                      <span className="text-sm font-medium text-gray-900">{budget.name}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(budget.plannedAmount)}
+                      {formatCurrency(budget.plannedBudget)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(budget.actualAmount)}
+                      {formatCurrency(budget.moneySpent)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`text-sm font-medium ${isOverBudget ? 'text-danger-600' : 'text-success-600'}`}>

@@ -5,16 +5,18 @@ interface BudgetModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (budget: {
-    category: string;
-    plannedAmount: number;
-    actualAmount: number;
-    month: Date;
+    name: string;
+    plannedBudget: number;
+    moneySpent: number;
+    month: string;
+    is_recurring: boolean;
   }) => void;
   budget?: {
-    category: string;
-    plannedAmount: number;
-    actualAmount: number;
-    month: Date;
+    name: string;
+    plannedBudget: number;
+    moneySpent: number;
+    month: string;
+    is_recurring: boolean;
   };
 }
 
@@ -30,30 +32,30 @@ const categories = [
 ];
 
 const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
-  const [category, setCategory] = useState(budget?.category || '');
-  const [plannedAmount, setPlannedAmount] = useState(budget?.plannedAmount?.toString() || '');
-  const [actualAmount, setActualAmount] = useState(budget?.actualAmount?.toString() || '0');
-  const [month, setMonth] = useState(
-    budget?.month?.toISOString().split('T')[0].slice(0, 7) || 
-    new Date().toISOString().split('T')[0].slice(0, 7)
-  );
+  const [name, setName] = useState(budget?.name || '');
+  const [plannedBudget, setPlannedBudget] = useState(budget?.plannedBudget?.toString() || '');
+  const [moneySpent, setMoneySpent] = useState(budget?.moneySpent?.toString() || '0');
+  const [month, setMonth] = useState(budget?.month || new Date().toISOString().slice(0, 7));
+  const [isRecurring, setIsRecurring] = useState(budget?.is_recurring || false);
 
   useEffect(() => {
     if (budget) {
-      setCategory(budget.category);
-      setPlannedAmount(budget.plannedAmount.toString());
-      setActualAmount(budget.actualAmount.toString());
-      setMonth(budget.month.toISOString().split('T')[0].slice(0, 7));
+      setName(budget.name);
+      setPlannedBudget(budget.plannedBudget.toString());
+      setMoneySpent(budget.moneySpent.toString());
+      setMonth(budget.month);
+      setIsRecurring(budget.is_recurring)
     }
   }, [budget]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      category,
-      plannedAmount: parseFloat(plannedAmount),
-      actualAmount: parseFloat(actualAmount),
-      month: new Date(month + '-01'),
+      name,
+      plannedBudget: parseFloat(plannedBudget),
+      moneySpent: parseFloat(moneySpent),
+      month,
+      is_recurring: isRecurring,
     });
     onClose();
   };
@@ -74,11 +76,11 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="category" className="form-label">Category</label>
+            <label htmlFor="name" className="form-label">Name</label>
             <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="form-input"
               required
             >
@@ -90,28 +92,28 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
           </div>
 
           <div>
-            <label htmlFor="plannedAmount" className="form-label">Planned Amount</label>
+            <label htmlFor="plannedBudget" className="form-label">Planned Budget</label>
             <input
-              id="plannedAmount"
+              id="plannedBudget"
               type="number"
               step="0.01"
               min="0"
-              value={plannedAmount}
-              onChange={(e) => setPlannedAmount(e.target.value)}
+              value={plannedBudget}
+              onChange={(e) => setPlannedBudget(e.target.value)}
               className="form-input"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="actualAmount" className="form-label">Actual Amount</label>
+            <label htmlFor="moneySpent" className="form-label">Money spent</label>
             <input
-              id="actualAmount"
+              id="moneySpent"
               type="number"
               step="0.01"
               min="0"
-              value={actualAmount}
-              onChange={(e) => setActualAmount(e.target.value)}
+              value={moneySpent}
+              onChange={(e) => setMoneySpent(e.target.value)}
               className="form-input"
               required
             />
@@ -127,6 +129,18 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
               className="form-input"
               required
             />
+          </div>
+
+          <div className="fkex items-center space-x-2">
+            <input
+              id="isRecurring"
+              type="checkbox"
+              checked={isRecurring}
+              onChange={() => setIsRecurring(!isRecurring)}
+              />
+              <label htmlFor="isRecurring" className="form-label">
+                Apply for every month (recurring)
+              </label>
           </div>
 
           <div className="flex justify-end space-x-2">
