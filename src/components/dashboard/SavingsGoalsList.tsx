@@ -76,7 +76,7 @@ const SavingsGoalsList = () => {
               
               <div className="mt-1 flex items-center justify-between text-sm">
                 <span className="text-gray-500">Remaining</span>
-                <span className="font-medium text-gray-900">{formatCurrency(goal.targetAmount - goal.savedAmount)}</span>
+                <span className="font-medium text-gray-900">{formatCurrency(remaining)}</span>
               </div>
             </div>
           );
