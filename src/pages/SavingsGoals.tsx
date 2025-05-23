@@ -9,7 +9,6 @@ import { useAuth } from '../hooks/useAuth';
 
 const SavingsGoals = () => {
   const { goals, addGoal, updateGoal, deleteGoal, addFunds } = useSavingsStore();
-  const [sortBy, setSortBy] = useState<'name' | 'progress' | 'deadline'>('deadline');
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
@@ -94,45 +93,7 @@ const SavingsGoals = () => {
             <p className="mt-1 text-sm text-gray-500">
               Saved {formatCurrency(totalSaved)} of {formatCurrency(totalTarget)}
             </p>
-          </div>
-          
-          <div className="mt-4 md:mt-0 md:ml-6 md:text-right">
-            <div className="inline-flex rounded-md shadow-sm">
-              <button
-                type="button"
-                onClick={() => setSortBy('name')}
-                className={`px-4 py-2 text-sm font-medium rounded-l-md ${
-                  sortBy === 'name'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                } border border-gray-300`}
-              >
-                Name
-              </button>
-              <button
-                type="button"
-                onClick={() => setSortBy('progress')}
-                className={`px-4 py-2 text-sm font-medium ${
-                  sortBy === 'progress'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                } border-t border-b border-gray-300`}
-              >
-                Progress
-              </button>
-              <button
-                type="button"
-                onClick={() => setSortBy('deadline')}
-                className={`px-4 py-2 text-sm font-medium rounded-r-md ${
-                  sortBy === 'deadline'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                } border border-gray-300`}
-              >
-                Deadline
-              </button>
-            </div>
-          </div>
+          </div> 
         </div>
         
         <div className="mt-6">

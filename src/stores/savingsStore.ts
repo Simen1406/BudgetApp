@@ -53,7 +53,7 @@ export const useSavingsStore = create<SavingsStore>((set, get) => ({
     .select();
 
   if (error) {
-    console.error('❌ Error adding goal to Supabase:', error);
+    console.error(' Error adding goal to Supabase:', error);
     return;
   }
 
