@@ -43,7 +43,12 @@ const SavingsGoals = () => {
     }
   };
 
-  const handleSaveGoal = (goalData) => {
+  const handleSaveGoal = (goalData: {
+    name: string;
+    targetAmount: number;
+    savedAmount: number;
+    deadline: Date;
+    }) => {
     console.log("handlesaveGoal called with:", goalData)
 
     if (selectedGoal) {
@@ -56,7 +61,7 @@ const SavingsGoals = () => {
 
         addGoal(goalData, user.id);
       } else {
-        console.error("No user ID found. Cannot save saving goal")
+        console.error("No user ID found. Cannot save savings goal")
       }
     }
   };

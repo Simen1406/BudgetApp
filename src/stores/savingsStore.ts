@@ -7,7 +7,7 @@ export type SavingsGoal = {
   user_id: string;
   name: string; // name of the goal
   targetAmount: number;
-  savedAmmount: number;
+  savedAmount: number;
   deadline : Date;
 };
 
@@ -15,7 +15,7 @@ export type SavingsGoal = {
 type SavingsStore = {
   goals: SavingsGoal[];
   fetchGoals: (userId: string) => Promise<void>;
-  addGoal: (goal: Omit<SavingsGoal, 'id'>) => Promise<void>;
+  addGoal: (goal: Omit<SavingsGoal, 'id' | "user_id">, userId : string) => Promise<void>;
   updateGoal: (id: string, updates: Partial<SavingsGoal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   addFunds: (id: string, amount: number) => Promise<void>;
@@ -77,7 +77,7 @@ export const useSavingsStore = create<SavingsStore>((set, get) => ({
     .from('savings_goals')
     .update({
       ...updates,
-      deadline: new Date(updates.deadline).toISOString(), // ensure correct format
+      deadline: updates.deadline ? new Date(updates.deadline).toISOString() : undefined, // ensure correct format for date
     })
     .eq('id', id)
     .select();
