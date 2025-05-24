@@ -2,15 +2,14 @@ import { Transaction } from '../components/dashboard/RecentTransactions';
 import { isValid, parse } from 'date-fns';
 
 export const exportTransactionsToCSV = (transactions: Transaction[]) => {
-  const headers = ['date', 'type', 'income', 'money out', 'category'];
+  const headers = ['date', 'type', 'category', 'amount'];
   const csvContent = [
     headers.join(','),
     ...transactions.map(t => [
       new Date(t.date).toISOString().split('T')[0],
-      t.note || '', // Using note field for transaction type
-      t.type === 'income' ? t.amount.toFixed(2) : '',
-      t.type === 'expense' ? t.amount.toFixed(2) : '',
-      t.category
+      t.note || '',
+      t.category,
+      t.amount.toFixed(2)
     ].join(','))
   ].join('\n');
 
@@ -21,58 +20,57 @@ export const exportTransactionsToCSV = (transactions: Transaction[]) => {
   link.click();
 };
 
-export const importTransactionsFromCSV = (file: File): Promise<Transaction[]> => {
+export const importTransactionsFromCSV = (file: File): Promise<Omit<Transaction, "id" | "user_id">> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
     reader.onload = (event) => {
       try {
         const text = event.target?.result as string;
-        const lines = text.split('\n');
-        const headers = lines[0].toLowerCase().split(',');
+        console.log("RAW CSV", text);
+
+        const lines = text.split('\n').filter(Boolean);
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        console.log("HEADERS", headers);
         
         // Find the relevant column indexes
         const dateIndex = headers.indexOf('date');
         const typeIndex = headers.indexOf('type');
-        const incomeIndex = headers.indexOf('income');
-        const moneyOutIndex = headers.indexOf('money out');
         const categoryIndex = headers.indexOf('category');
+        const amountIndex = headers.indexOf("amount");
         
-        if (dateIndex === -1 || typeIndex === -1 || (incomeIndex === -1 && moneyOutIndex === -1)) {
-          throw new Error('Required columns not found in CSV');
+        if ([dateIndex, typeIndex, categoryIndex, amountIndex].some(i => i === -1)) {
+          throw new Error("required columns were not found in csv");
         }
 
-        const transactions: Transaction[] = lines.slice(1)
-          .filter(line => line.trim() && !line.toLowerCase().includes('money out this month'))
+        const transactions: Omit<Transaction, "id" | "user_id">[] = lines.slice(1)
           .map(line => {
-            const values = line.split(',');
-            const dateStr = values[dateIndex].trim();
-            const transactionType = values[typeIndex].trim();
-            const income = parseFloat(values[incomeIndex] || '0');
-            const moneyOut = parseFloat(values[moneyOutIndex] || '0');
-            const category = values[categoryIndex]?.trim() || 'Uncategorized';
+            const values = line.split(',').map(v => v.trim());
+
+            const rawDate = values[dateIndex]
+            const type = values[typeIndex]
+            const category = values[categoryIndex] as "income" | "expense";
+            const amount = parseFloat(values[amountIndex]);
             
             // Try different date formats
-            let date = parse(dateStr, 'yyyy-MM-dd', new Date());
+            let date = parse(rawDate, 'yyyy-MM-dd', new Date());
             if (!isValid(date)) {
-              date = parse(dateStr, 'dd.MM.yyyy', new Date());
+              date = parse(rawDate, 'dd.MM.yyyy', new Date());
             }
             
-            if (!isValid(date)) {
-              console.warn(`Invalid date found: ${dateStr}. Skipping transaction.`);
+            if (!isValid(date) || !type || !category || isNaN(amount)) {
+              console.warn(`Invalid row skipped: ${line}`);
               return null;
             }
 
             return {
-              id: crypto.randomUUID(),
               date,
-              type: income > 0 ? 'income' : 'expense',
-              amount: income > 0 ? income : moneyOut,
+              type,
               category,
-              note: transactionType // Store the transaction type in the note field
+              amount,
             };
           })
-          .filter((t): t is Transaction => t !== null);
+          .filter((t): t is Omit<Transaction, "id" | "user_id"> => t !== null);
           
         resolve(transactions);
       } catch (error) {
