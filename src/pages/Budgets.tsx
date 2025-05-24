@@ -17,11 +17,11 @@ const Budgets = () => {
 
   //fetch budgets
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+
       const formattedMonth = currentMonth.toISOString().slice(0, 7); //collects month and year: "2025-02"
       fetchBudgets(user.id, formattedMonth);
-    }
-  }, [user, currentMonth]);
+  }, [user, currentMonth, fetchBudgets]);
   
   // Calculate totals
   const totalPlanned = budgets.reduce((sum, budget) => sum + budget.plannedBudget, 0);
@@ -38,7 +38,15 @@ const Budgets = () => {
     }
   };
 
-  const handleSave = (budgetData: Omit<typeof budgets[0], 'id'>) => {
+  const handleSave = (budgetData: {
+    name: string;
+    plannedBudget: number;
+    moneySpent: number;
+    month: string;
+    is_recurring: boolean;
+  }) => {
+    if (!user) return;
+
     if (selectedBudget) {
       updateBudget(selectedBudget.id, budgetData);
     } else {
