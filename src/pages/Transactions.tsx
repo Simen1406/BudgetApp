@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, Filter, Download, Upload, Search, Edit2, Trash2 } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { useTransactionStore } from '../stores/transactionStore';
@@ -6,6 +6,9 @@ import { exportTransactionsToCSV, importTransactionsFromCSV } from '../utils/csv
 import TransactionModal from '../components/transactions/TransactionModal';
 import type { Transaction } from '../components/dashboard/RecentTransactions';
 import { formatCurrency } from '../utils/formatCurrency';
+import { supabase } from '../lib/supabase';
+
+
 
 const Transactions = () => {
   const { transactions, addTransaction, addTransactions, deleteTransaction, updateTransaction } = useTransactionStore();
@@ -185,10 +188,10 @@ const Transactions = () => {
                   Date
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
+                  Type
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Note
+                  Category
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
