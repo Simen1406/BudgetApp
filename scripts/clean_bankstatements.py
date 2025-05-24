@@ -3,7 +3,7 @@ import os
 
 
 #Columns to remove
-SENSITIVE_FIELDS = ['Bokført dato', 'Rentedato', 'Undertype', 'Fra konto', 'Avsender', 'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr', 'Beskrivelse']
+SENSITIVE_FIELDS = ['Bokført dato', 'Rentedato', 'Beskrivelse', 'Fra konto', 'Avsender', 'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr']
 
 #function to remove unneccecary columns and rows. 
 def clean_bank_statement(input_path: str, output_path: str):
@@ -14,45 +14,50 @@ def clean_bank_statement(input_path: str, output_path: str):
 
     
     #Change from norwegian to english column names
-    df.rename(columns={'Utført dato': 'date', 'Beløp ut': 'money out', 'Type' : 'type', 'Beløp inn' : 'income'}, inplace=True)
-    df.dropna(subset=['date', 'money out'], inplace=True)
+    df.rename(columns={'Utført dato': 'date', 'Beløp ut': 'expense', 'Type' : 'type', 'Beløp inn' : 'income'}, inplace=True)
+    df.dropna(subset=['date'], inplace=True)
 
     #adds the category column 
     if 'category' not in df.columns:
         df['category'] = df["type"]
 
     #adds together all the amounts from money out column
-    df["money out"] = pd.to_numeric(df["money out"],errors="coerce")
-    df['income'] = pd.to_numeric(df.get('income', 0), errors='coerce')
-    total_money_out = df["money out"].sum()
-    total_money_in = df["income"].sum()
+    df["expense"] = pd.to_numeric(df["expense"],errors="coerce").fillna(0)
+    df['income'] = pd.to_numeric(df.get('income', 0), errors='coerce').fillna(0)
 
-     # Assign category based on whether money out exists
-    df['category'] = df['money out'].apply(
-        lambda x: 'expense' if pd.notna(x) and x < 0 else 'income'
-        )
+    #create a column for amount (income - expense)
+    df["amount"] = df["income"] - df["expense"]
+
+    #assign category type for each row depending on value of expense and income
+    df["category"] = df["amount"].apply(lambda x: "income" if x >= 0 else "expense")
+
+    df['date'] = pd.to_datetime(df['date'], format='%d.%m.%Y', errors='coerce').dt.strftime('%Y-%m-%d')
+    df.dropna(subset=['date'], inplace=True)
        
-     # Reorder columns explicitly and adds column for category
-    export_columns = ['date', 'type', 'income', 'money out', 'category']
-    df = df[[col for col in export_columns if col in df.columns]]
+     # Reorder columns explicitly to match supabase transactions table
+    df = df[['date', 'type', 'category', 'amount']]
 
-    #creates a new row for the total sum
-    total_row = pd.DataFrame([{
-        "date": "Money out this month",
-        "money out": total_money_out,
-        "type" : "Total",
-        "category" : ""
-        }])
-    df = pd.concat([df, total_row], ignore_index=True)
-
-    #Ensures the output directory (data/cleaned/) exists
+    # Ensures that output folder exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
-    print(f"Cleaned file saved to: {output_path}")
 
+
+
+
+
+#this parts need to be edited to automatically match input file and create correct output filename. for now its ok for testing.
+months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+months_year_csv = []
+year = "2025"
+
+for month in months:
+    months_year_csv.append(month + year + ".csv")
+
+full_output_path = "data/cleaned/cleaned" + months_year_csv[3]
+full_input_path = "data/raw/" + months_year_csv[3]
 
 if __name__ == "__main__":
     clean_bank_statement(
-        input_path="data/raw/jan_mai2025.csv",
-        output_path="data/cleaned/cleaned_jan_mai2025.csv"
+        input_path = full_input_path, 
+        output_path = full_output_path
     )
