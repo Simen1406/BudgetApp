@@ -51,6 +51,49 @@ const Transactions = () => {
     }
   };
 
+  const handleRawCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      //upload csv file to API
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch("http://localhost:8000/clean-csv", {
+        method: "POST",
+        body: formData,
+        });
+
+      const cleaned = await response.json();
+
+      if(!Array.isArray(cleaned)) {
+        throw new Error("Not authenticated");
+      }
+
+      //Check authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log("Supabase session:", session);
+
+      if (sessionError || !session || !session.user) {
+        throw new Error("Not authenticated");
+}
+
+      const user = session.user;
+
+      //send the cleaned data to supabase
+      await addTransactions(cleaned, user.id);
+      alert(`Successfully imported ${cleaned.length} cleaned transactions`);
+    } catch (error) {
+      console.error("import failed", error)
+      alert('Error importing transactions: ' + (error as Error).message);
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
@@ -164,14 +207,15 @@ const Transactions = () => {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Import
+                Import Raw CSV
               </button>
+
               <input
                 type="file"
                 ref={fileInputRef}
                 accept=".csv"
                 className="hidden"
-                onChange={handleImport}
+                onChange={handleRawCsvImport}
               />
             </div>
           </div>
@@ -210,19 +254,19 @@ const Transactions = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className={`h-2 w-2 rounded-full ${
-                        transaction.type === 'income' ? 'bg-success-500' : 'bg-danger-500'
+                        transaction.category === 'income' ? 'bg-success-500' : 'bg-danger-500'
                       } mr-2`}></div>
-                      <span className="text-sm font-medium text-gray-900">{transaction.category}</span>
+                      <span className="text-sm font-medium text-gray-900">{transaction.type}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.note}
+                    {transaction.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm font-medium ${
-                      transaction.type === 'income' ? 'text-success-600' : 'text-danger-600'
+                      transaction.category === 'income' ? 'text-success-600' : 'text-danger-600'
                     }`}>
-                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
+                      {transaction.category === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
