@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from clean_bankstatements import clean_bank_statement_df
 import pandas as pd
 import io
+from pathlib import Path
+import traceback
 
 app = FastAPI()
 
@@ -25,6 +27,31 @@ async def clean_csv(file: UploadFile = File(...)):
     try:
         raw_df = pd.read_csv(io.BytesIO(contents), encoding="latin1", delimiter=";")
         cleaned_df = clean_bank_statement_df(raw_df)
+
+        #save the file to correct folder
+        project_root = Path(__file__).resolve().parent.parent
+        cleaned_dir = project_root / "data" / "cleaned"
+        cleaned_dir.mkdir(parents=True, exist_ok=True)
+
+        output_path = cleaned_dir / "april2025cleaned.csv"
+        print("✅ Saving cleaned CSV to disk...")
+        cleaned_df.to_csv(output_path, index=False)
+        print(f"✅ File saved at: {output_path}")
         return cleaned_df.to_dict(orient="records")
+    
     except Exception as e:
+        traceback.print_exc()
         return {"error": str(e)}
+    
+@app.get("/transaction-type")
+def get_transaction_types():
+    project_root = Path(__file__).resolve().parent.parent
+    cleaned_csv_path = project_root / "data" / "cleaned" / "april2025cleaned.csv"
+
+    if not cleaned_csv_path.exists():
+        return {"error": "No cleaned CSV file found"}
+    
+    df = pd.read_csv(cleaned_csv_path)
+    unique_types = df["type"].dropna().unique().tolist()
+
+    return unique_types

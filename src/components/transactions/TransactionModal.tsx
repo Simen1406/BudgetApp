@@ -5,19 +5,18 @@ interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (transaction: {
-    type: 'income' | 'expense';
-    category: string;
+    type: string;
+    category: 'income' | 'expense';
     amount: number;
     date: Date;
-    note?: string;
   }) => void;
   transaction?: {
-    type: 'income' | 'expense';
-    category: string;
+    type: string;
+    category: 'income' | 'expense';
     amount: number;
     date: Date;
-    note?: string;
   };
+  availableTypes: string[];
 }
 
 const categories = {
@@ -25,15 +24,14 @@ const categories = {
   expense: ['Housing', 'Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Other']
 };
 
-const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionModalProps) => {
-  const [type, setType] = useState<'income' | 'expense'>(transaction?.type || 'expense');
-  const [category, setCategory] = useState(transaction?.category || '');
+const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes }: TransactionModalProps) => {
+  const [type, setType] = useState(transaction?.type || '');
+  const [category, setCategory] = useState<'income' | 'expense'>(transaction?.category || 'expense');
   const [amount, setAmount] = useState(transaction?.amount?.toString() || '');
   const [date, setDate] = useState(
     transaction?.date?.toISOString().split('T')[0] || 
     new Date().toISOString().split('T')[0]
   );
-  const [note, setNote] = useState(transaction?.note || '');
 
   useEffect(() => {
     if (transaction) {
@@ -41,13 +39,11 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
       setCategory(transaction.category);
       setAmount(transaction.amount.toString());
       setDate(transaction.date.toISOString().split('T')[0]);
-      setNote(transaction.note || '');
     } else {
-      setType('expense');
-      setCategory('');
+      setType('');
+      setCategory('expense');
       setAmount('');
       setDate(new Date().toISOString().split('T')[0]);
-      setNote('');
     }
   }, [transaction]);
 
@@ -58,7 +54,6 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
       category,
       amount: parseFloat(amount),
       date: new Date(date),
-      note: note.trim() || undefined
     });
     onClose();
   };
@@ -78,18 +73,16 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/*choose category: income or expense*/}
           <div>
-            <label className="form-label">Type</label>
+            <label className="form-label">Category</label>
             <div className="flex space-x-4">
               <label className="flex items-center">
                 <input
                   type="radio"
                   value="income"
-                  checked={type === 'income'}
-                  onChange={(e) => {
-                    setType(e.target.value as 'income' | 'expense');
-                    setCategory(''); // Reset category when type changes
-                  }}
+                  checked={category === 'income'}
+                  onChange={() => setCategory("income")}
                   className="mr-2"
                 />
                 Income
@@ -98,36 +91,35 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
                 <input
                   type="radio"
                   value="expense"
-                  checked={type === 'expense'}
-                  onChange={(e) => {
-                    setType(e.target.value as 'income' | 'expense');
-                    setCategory(''); // Reset category when type changes
-                  }}
+                  checked={category === 'expense'}
+                  onChange={(e) => setCategory("expense")}
                   className="mr-2"
                 />
                 Expense
               </label>
             </div>
           </div>
-
+          
+          {/*choose transaction type*/}
           <div>
-            <label htmlFor="category" className="form-label">Category</label>
+            <label htmlFor="category" className="form-label">Transaction Type</label>
             <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              id="type"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
               className="form-input"
               required
             >
-              <option value="">Select a category</option>
-              {categories[type].map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              <option value="">Select a Type</option>
+              {availableTypes.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
             </select>
           </div>
 
+          {/* choose amount */}
           <div>
-            <label htmlFor="amount" className="form-label">Amount</label>
+            <label htmlFor="type" className="form-label">Amount</label>
             <input
               id="amount"
               type="number"
@@ -138,8 +130,9 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
               className="form-input"
               required
             />
-          </div>
+            </div>
 
+          {/* date */}
           <div>
             <label htmlFor="date" className="form-label">Date</label>
             <input
@@ -152,18 +145,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction }: TransactionM
             />
           </div>
 
-          <div>
-            <label htmlFor="note" className="form-label">Transaction Type</label>
-            <input
-              id="note"
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="form-input"
-              placeholder="e.g., VISA, Bank Transfer, etc."
-            />
-          </div>
-
+          {/* actions */}
           <div className="flex justify-end space-x-2">
             <button
               type="button"

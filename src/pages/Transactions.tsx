@@ -17,6 +17,26 @@ const Transactions = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchTransactionTypes = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/transaction-type");
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          console.log("Fetched available types:", data);
+          setAvailableTypes(data);
+        }
+      } catch (err) {
+        console.error("Error fetching transaction types:", err);
+      }
+    };
+
+    fetchTransactionTypes();
+  }, []);
   
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = 
@@ -50,12 +70,19 @@ const Transactions = () => {
       const cleaned = await response.json();
 
       if(!Array.isArray(cleaned)) {
+        console.error("❌ CSV API error response:", cleaned);
         throw new Error("Not authenticated");
       }
 
       //Check authentication
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log("Supabase session:", session);
+      console.log("🧪 Supabase session result:", session);
+      console.log("🧪 Supabase session error:", sessionError);
+
+      const userCheck = await supabase.auth.getUser();
+      console.log("🧪 Supabase user result:", userCheck);
+
+
 
       if (sessionError || !session || !session.user) {
         throw new Error("Not authenticated");
@@ -286,6 +313,7 @@ const Transactions = () => {
         }}
         onSave={handleSave}
         transaction={editingTransaction || undefined}
+        availableTypes={availableTypes}
       />
     </div>
   );
