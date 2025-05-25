@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Plus, Filter, Download, Upload, Search, Edit2, Trash2 } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { useTransactionStore } from '../stores/transactionStore';
-import { exportTransactionsToCSV, importTransactionsFromCSV } from '../utils/csvUtils';
+import { exportTransactionsToCSV } from '../utils/csvUtils';
 import TransactionModal from '../components/transactions/TransactionModal';
 import type { Transaction } from '../components/dashboard/RecentTransactions';
 import { formatCurrency } from '../utils/formatCurrency';
@@ -31,24 +31,6 @@ const Transactions = () => {
 
   const handleExport = () => {
     exportTransactionsToCSV(filteredTransactions);
-  };
-
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const importedTransactions = await importTransactionsFromCSV(file);
-      addTransactions(importedTransactions);
-      alert(`Successfully imported ${importedTransactions.length} transactions`);
-    } catch (error) {
-      alert('Error importing transactions: ' + (error as Error).message);
-    }
-    
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const handleRawCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
