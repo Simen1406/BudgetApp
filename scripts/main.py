@@ -15,6 +15,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {"status": "API running"}
+
 @app.post("/clean-csv")
 async def clean_csv(file: UploadFile = File(...)):
     contents = await file.read()
