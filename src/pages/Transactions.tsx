@@ -4,9 +4,10 @@ import { format, isValid } from 'date-fns';
 import { useTransactionStore } from '../stores/transactionStore';
 import { exportTransactionsToCSV } from '../utils/csvUtils';
 import TransactionModal from '../components/transactions/TransactionModal';
-import type { Transaction } from '../components/dashboard/RecentTransactions';
 import { formatCurrency } from '../utils/formatCurrency';
 import { supabase } from '../lib/supabase';
+import { insertTransactionsForUser } from '../lib/supabaseTransactions';
+import { Transaction } from '../types/transactionsType';
 
 
 
@@ -27,7 +28,6 @@ const Transactions = () => {
         const data = await res.json();
 
         if (Array.isArray(data)) {
-          console.log("Fetched available types:", data);
           setAvailableTypes(data);
         }
       } catch (err) {
@@ -40,8 +40,7 @@ const Transactions = () => {
   
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = 
-      transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.note?.toLowerCase().includes(searchTerm.toLowerCase());
+      transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
       
     const matchesType = 
       filterType === 'all' || transaction.type === filterType;
@@ -54,54 +53,66 @@ const Transactions = () => {
   };
 
   const handleRawCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-    try {
-      //upload csv file to API
-      const formData = new FormData();
-      formData.append('file', file);
+  try {
+    // Upload CSV to FastAPI backend
+    const formData = new FormData();
+    formData.append('file', file);
 
-      const response = await fetch("http://localhost:8000/clean-csv", {
-        method: "POST",
-        body: formData,
-        });
+    const response = await fetch("http://localhost:8000/clean-csv", {
+      method: "POST",
+      body: formData,
+    });
 
-      const cleaned = await response.json();
+    const cleaned = await response.json();
 
-      if(!Array.isArray(cleaned)) {
-        console.error("❌ CSV API error response:", cleaned);
-        throw new Error("Not authenticated");
-      }
-
-      //Check authentication
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log("🧪 Supabase session result:", session);
-      console.log("🧪 Supabase session error:", sessionError);
-
-      const userCheck = await supabase.auth.getUser();
-      console.log("🧪 Supabase user result:", userCheck);
-
-
-
-      if (sessionError || !session || !session.user) {
-        throw new Error("Not authenticated");
-}
-
-      const user = session.user;
-
-      //send the cleaned data to supabase
-      await addTransactions(cleaned, user.id);
-      alert(`Successfully imported ${cleaned.length} cleaned transactions`);
-    } catch (error) {
-      console.error("import failed", error)
-      alert('Error importing transactions: ' + (error as Error).message);
+    if (!Array.isArray(cleaned)) {
+      console.error("❌ CSV API error response:", cleaned);
+      throw new Error("CSV parsing failed or returned wrong format");
     }
+
+    const cleanedWithDates = cleaned.map((t) => ({
+      ...t,
+      date: new Date(t.date),
+    }));
     
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+
+    // Get Supabase session and user
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session?.user) {
+      throw new Error("Not authenticated");
     }
-  };
+
+    const user = session.user;
+
+    // Insert cleaned data with user_id
+    const inserted = await insertTransactionsForUser(user.id, cleanedWithDates);
+
+    if (!inserted) {
+      throw new Error("Failed to insert transactions to Supabase");
+    }
+
+    // Update Zustand store immediately
+    const { Transactions, setTransactions } = useTransactionStore.getState();
+    setTransactions([...transactions, ...inserted]);
+
+    alert(`✅ Successfully imported ${inserted.length} transactions`);
+  } catch (error) {
+    console.error("❌ import failed", error);
+    alert('Error importing transactions: ' + (error as Error).message);
+  }
+
+  // Reset file input
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+};
 
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);

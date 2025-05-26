@@ -17,11 +17,13 @@ import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import LoadingScreen from './components/ui/LoadingScreen';
 import { useSavingsStore } from './stores/savingsStore';
+import { useTransactionStore } from './stores/transactionStore';
 
 function App() {
   const { user, isGuest, isLoading } = useAuth();
   const [appReady, setAppReady] = useState(false);
   const { fetchGoals } = useSavingsStore();
+  const { fetchTransactions } = useTransactionStore();
 
   useEffect(() => {
   // Simulate initial app loading
@@ -35,6 +37,7 @@ function App() {
   useEffect(() => {
     if (user && appReady && !isGuest) {
       fetchGoals(user.id);
+      fetchTransactions(user.id);
     }
   }, [user, appReady, isGuest]);
 

@@ -1,18 +1,10 @@
 import { create } from 'zustand';
-import { Transaction } from '../components/dashboard/RecentTransactions';
+import { Transaction } from '../types/transactionsType';
 import { supabase } from '../lib/supabase';
-
-export type Transaction = {
-  id: string;             
-  user_id: string;        
-  date: Date;             
-  type: string;           // Free text like "Cash", "Visa", "Transfer"
-  category: 'income' | 'expense'; 
-  amount: number;         
-};
 
 interface TransactionStore {
   transactions: Transaction[];
+  setTransactions: (transactions: Transaction[]) => void;
   fetchTransactions: (user_Id: string) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   addTransactions: (transactions: Omit <Transaction, "id">[], userId: string) => Promise<void>;
@@ -23,7 +15,9 @@ interface TransactionStore {
 export const useTransactionStore = create<TransactionStore>((set) => ({
   transactions: [],
 
+  setTransactions: (transactions) => set({ transactions }),
   fetchTransactions: async (userId:string) => {
+
   const { data, error } = await supabase
   .from('transactions')
   .select('*')
@@ -32,10 +26,15 @@ export const useTransactionStore = create<TransactionStore>((set) => ({
 
   
   if (error) {
-    console.error("Fetching error", error.message);
-  } else {
-    set({ transaction: data.map((t) => ({...t, date: new Date(t.date) })) });
-    }
+    console.error('❌ Error fetching from Supabase:', error.message);
+  }
+  
+  set({ transactions: (data ?? []).map((t) => ({
+    ...t,
+    date: new Date(t.date),
+  })) });
+
+  console.log("✅ Zustand state updated with transactions");
   },
 
 
