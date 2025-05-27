@@ -14,7 +14,10 @@ export async function getTransactionsByUser(userId: string): Promise<Transaction
   }
 
   // Ensure date field is cast to Date
-  return (data ?? []).map((t: any) => ({ ...t, date: new Date(t.date) }))
+  return (data as Transaction [] ?? []).map((t) => ({ 
+    ...t,
+    date: new Date(t.date),
+  }))
 }
 
 export async function insertTransactionsForUser(
