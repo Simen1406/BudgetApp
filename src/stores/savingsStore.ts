@@ -19,12 +19,17 @@ type SavingsStore = {
   updateGoal: (id: string, updates: Partial<SavingsGoal>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   addFunds: (id: string, amount: number) => Promise<void>;
+  setGoals: (goasl: SavingsGoal[]) => void;
 };
 
 export const useSavingsStore = create<SavingsStore>((set, get) => ({
   goals: [],
 
-  // Fetch all goals for a user from Supabase
+
+  //fetch mock goals for users not logged in
+  setGoals: (goals) => set ({ goals }),
+
+  // Fetch all goals for a logged in user from Supabase
   fetchGoals: async (userId) => {
     const { data, error } = await supabase
       .from('savings_goals')

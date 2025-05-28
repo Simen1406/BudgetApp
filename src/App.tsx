@@ -15,7 +15,6 @@ import NotFound from './pages/NotFound';
 // Components
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
-import LoadingScreen from './components/ui/LoadingScreen';
 import { useSavingsStore } from './stores/savingsStore';
 import { useTransactionStore } from './stores/transactionStore';
 
@@ -35,9 +34,18 @@ function App() {
 }, []);
 
   useEffect(() => {
+    const transactionStore = useTransactionStore.getState();
+    const savingsStore = useSavingsStore.getState();
+
     if (user && appReady && !isGuest) {
-      fetchGoals(user.id);
-      fetchTransactions(user.id);
+      console.log("logged into:", user.id);
+      savingsStore.fetchGoals(user.id);
+      transactionStore.fetchTransactions(user.id);
+    }
+
+    if (user && appReady && isGuest) {
+      transactionStore.setTransactions([]);
+      savingsStore.setGoals([]);
     }
   }, [user, appReady, isGuest]);
 
