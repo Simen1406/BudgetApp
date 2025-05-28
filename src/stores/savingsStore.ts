@@ -18,7 +18,6 @@ type SavingsStore = {
 export const useSavingsStore = create<SavingsStore>((set, get) => ({
   goals: [],
 
-
   //fetch mock goals for users not logged in
   setGoals: (goals) => set ({ goals }),
 

@@ -18,13 +18,41 @@ import PrivateRoute from './components/auth/PrivateRoute';
 import { useSavingsStore } from './stores/savingsStore';
 import { useTransactionStore } from './stores/transactionStore';
 import { useBudgetStore } from './stores/budgetStore';
-import { mockBudget, mockGoal, mockTransactions } from './data/mockData';
+import { mockBudget, mockTransactions, mockGoal } from './data/mockData';
+
 
 function App() {
   const { user, isGuest, isLoading } = useAuth();
   const [appReady, setAppReady] = useState(false);
   const { fetchGoals } = useSavingsStore();
   const { fetchTransactions } = useTransactionStore();
+
+  const loadInitialData = (user: any, isGuest: boolean) => {
+    const transactionStore = useTransactionStore.getState();
+    const budgetStore = useBudgetStore.getState();
+    const savingsStore = useSavingsStore.getState();
+
+    //clear old data
+    transactionStore.setTransactions([]);
+    budgetStore.setBudgets([]);
+    savingsStore.setGoals([]);
+
+    if (isGuest) {
+      //mock data
+      transactionStore.setTransactions(mockTransactions);
+      budgetStore.setBudgets([mockBudget]);
+      savingsStore.setGoals([mockGoal]);
+      return;
+    }
+
+    if (user) {
+      //fetch user data
+      const currentMonth = new Date().toISOString().slice(0,7);
+      transactionStore.fetchTransactions(user.id);
+      budgetStore.fetchBudgets(user.id, currentMonth);
+      savingsStore.fetchGoals(user.id);
+    }
+  };
 
   useEffect(() => {
   // Simulate initial app loading
@@ -36,25 +64,10 @@ function App() {
 }, []);
 
   useEffect(() => {
-    const transactionStore = useTransactionStore.getState();
-    const savingsStore = useSavingsStore.getState();
-    const budgetStore = useBudgetStore.getState();
-
-
-    if (user && appReady && !isGuest) {
-      console.log("logged into:", user.id);
-      savingsStore.fetchGoals(user.id);
-      transactionStore.fetchTransactions(user.id);
-      budgetStore.fetchBudgets(user.id);
-      
-    }
-
-    if (appReady && isGuest) {
-      transactionStore.setTransactions(mockTransactions);
-      savingsStore.setGoals([mockGoal]);
-      budgetStore.setBudgets([mockBudget]);
-    }
-  }, [user, appReady, isGuest]);
+  if (appReady) {
+    loadInitialData(user, isGuest);
+  }
+}, [user, appReady, isGuest]);
 
   
   return (

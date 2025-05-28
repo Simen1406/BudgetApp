@@ -6,22 +6,40 @@ import { useBudgetStore } from '../stores/budgetStore';
 import BudgetModal from '../components/budgets/BudgetModal';
 import { formatCurrency } from '../utils/formatCurrency';
 
+
 const Budgets = () => {
-  const { budgets, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { budgets, loading, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
+  const {currentMonth, setCurrentMonth} = useBudgetStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<typeof budgets[0] | null>(null);
   const { user } = useAuth();
-  
+
+  const selectedMonth = format(currentMonth, 'yyyy-MM');
   const monthName = format(currentMonth, 'MMMM yyyy');
+  
+
 
   //fetch budgets
   useEffect(() => {
-    if (!user) return;
+  if (!user) return;
+  fetchBudgets(user.id, selectedMonth);
+}, [user, selectedMonth]);
 
-      const formattedMonth = currentMonth.toISOString().slice(0, 7); //collects month and year: "2025-02"
-      fetchBudgets(user.id, formattedMonth);
-  }, [user, currentMonth, fetchBudgets]);
+ useEffect(() => {
+  return () => {
+    useBudgetStore.setState({ budgets: []});
+  };
+}, []);
+
+{/*}
+  if (loading) {
+    return <div>Loading budgets...</div>;
+  }
+
+  if (budgets.length === 0) {
+    return <div>no budgets found</div>
+  }
+*/}
   
   // Calculate totals
   const totalPlanned = budgets.reduce((sum, budget) => sum + budget.plannedBudget, 0);
@@ -59,7 +77,9 @@ const Budgets = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Monthly Budgets</h1>
-          <p className="mt-1 text-sm text-gray-500">{monthName}</p>
+          <p className="mt-1 text-sm text-gray-500">
+            {format(currentMonth, 'MMMM')}
+          </p>
         </div>
         
         <div className="mt-4 sm:mt-0 flex space-x-2">
@@ -145,8 +165,8 @@ const Budgets = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {budgets.map((budget) => {
-                const difference = budget.plannedBudget - budget.plannedBudget;
-                const percentage = (budget.moneySpent / budget.moneySpent) * 100;
+                const difference = budget.plannedBudget - budget.moneySpent;
+                const percentage = (budget.moneySpent / budget.plannedBudget) * 100;
                 const isOverBudget = difference < 0;
                 
                 return (

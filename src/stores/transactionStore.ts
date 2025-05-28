@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Transaction } from '../types/transactionsType';
 import { supabase } from '../lib/supabase';
-import { mockTransactions } from '../data/mockData';
+import { mockTransactions, mockTransactionTypes } from '../data/mockData';
 
 interface TransactionStore {
   transactions: Transaction[];

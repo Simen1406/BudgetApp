@@ -7,41 +7,54 @@ import { Budget } from '../types/budget';
 
 type BudgetStore = {
   budgets: Budget[];
+  loading: boolean;
+  currentMonth: Date;
   fetchBudgets: (userId: string, month: string) => Promise<void>;
   addBudget: (budget: Omit<Budget, 'id' | "user_id">, userId: string) => Promise<void>;
   updateBudget: (id: string, updates: Partial<Budget>) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
   setBudgets: (budgets: Budget[]) => void;
+  setCurrentMonth: (date: Date) => void;
 }
 
 
-export const useBudgetStore = create<BudgetStore>((set) => ({
+export const useBudgetStore = create<BudgetStore>((set, get) => ({
   budgets: [],
+  loading: false,
+  currentMonth: new Date(),
 
+  setCurrentMonth: (date) => set({currentMonth:date }),
   //set mock budget for guest login
   setBudgets: (budgets) => set({ budgets }),
 
   //fetch budgets
   fetchBudgets: async (userId, month) => {
-    const { data, error} = await supabase
-    .from('budgets')
-    .select("*")
-    .eq('user_id', userId)
-    .or(`month.eq.${month},is_recurring.eq.true`)
+  set({ loading: true, budgets: [] });
 
-    if (error) {
-      console.error("failed to fetch budgets:", error);
-      set ({ budgets: [mockBudget] });
-      return;
-    }
+    const [monthly, recurring] = await Promise.all([
+    supabase
+      .from('budgets')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('month', month), // month = '2025-07'
 
-    if (!data || data.length === 0) {
-      set ({ budgets: [mockBudget] });
-      return;
-    }
-    
-    set({ budgets: data });
-  },
+    supabase
+      .from('budgets')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_recurring', true)
+  ]);
+
+  const combinedMap = new Map();
+  [...(monthly.data || []), ...(recurring.data || [])].forEach(b => 
+    combinedMap.set(b.id, b)
+  );
+
+  set({
+    budgets: Array.from(combinedMap.values()),
+    loading: false,
+  });
+},
   
   // Creation, update, deletion of budgets by user 
   addBudget: async (budget, userId) => {
@@ -78,17 +91,8 @@ export const useBudgetStore = create<BudgetStore>((set) => ({
   },
   
   deleteBudget: async (id) => {
-    const { error } = await supabase
-      .from('budgets')
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      set((state) => ({
-        budgets: state.budgets.filter((b) => b.id !== id),
-      }));
-    } else {
-      console.error('Error deleting budget:', error);
-    }
+    await supabase.from('budgets').delete().eq('id', id);
+    const updatedBudgets = get().budgets.filter(b => b.id !== id);
+    set({ budgets: updatedBudgets });
   },
 }));
