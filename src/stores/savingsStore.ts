@@ -1,15 +1,8 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import { mockGoal } from '../data/mockData';
+import { SavingsGoal } from '../types/savingType';
 
-// Define the savings goal type based on DB structure
-export type SavingsGoal = {
-  id: string;
-  user_id: string;
-  name: string; // name of the goal
-  targetAmount: number;
-  savedAmount: number;
-  deadline : Date;
-};
 
 // Zustand store shape
 type SavingsStore = {
@@ -36,6 +29,12 @@ export const useSavingsStore = create<SavingsStore>((set, get) => ({
       .select('*')
       .eq('user_id', userId);
 
+    if (!data || data.length === 0) {
+      // If no goals are found, fetch mock goals
+      set({goals: [mockGoal] });
+      return;
+    }
+
     if (!error && data) {
       set({
         goals: data.map((goal) => ({
@@ -46,6 +45,7 @@ export const useSavingsStore = create<SavingsStore>((set, get) => ({
     } else {
       console.error("Failed to fetch goals:", error)
     }
+
   },
 
   // Add a new goal for the logged-in user

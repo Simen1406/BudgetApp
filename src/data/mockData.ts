@@ -1,84 +1,75 @@
-import { Transaction } from '../components/dashboard/RecentTransactions';
+import { Budget } from '../types/budget';
+import { Transaction } from '../types/transactionsType';
+import { SavingsGoal } from '../types/savingType';
 
 export const mockTransactions: Transaction[] = [
   {
-    id: '1',
-    type: 'income',
-    category: 'Salary',
+    id: 'mock-1',
+    user_id: 'guest',
+    type: 'Salary',
+    category: 'income',
     amount: 3000,
     date: new Date(2023, 5, 1),
-    note: 'Monthly salary',
   },
   {
-    id: '2',
-    type: 'expense',
-    category: 'Rent',
+    id: 'mock-2',
+    user_id: 'guest',
+    type: 'rent',
+    category: 'expense',
     amount: 1200,
     date: new Date(2023, 5, 2),
-    note: 'Monthly rent',
   },
   {
-    id: '3',
-    type: 'expense',
-    category: 'Groceries',
+    id: 'mock-3',
+    user_id: 'guest',
+    type: 'groceries',
+    category: 'expense',
     amount: 150,
     date: new Date(2023, 5, 5),
-    note: 'Weekly grocery shopping',
   },
   {
-    id: '4',
-    type: 'expense',
-    category: 'Utilities',
+    id: 'mock-4',
+    user_id: 'guest',
+    type: 'Utilities',
+    category: 'expense',
     amount: 100,
     date: new Date(2023, 5, 10),
-    note: 'Electricity and water',
   },
   {
-    id: '5',
-    type: 'expense',
-    category: 'Dining Out',
+    id: 'mock-5',
+    user_id: 'guest',
+    type: 'Dining Out',
+    category: 'expense',
     amount: 50,
     date: new Date(2023, 5, 15),
-    note: 'Dinner with friends',
   },
-  {
-    id: '6',
-    type: 'expense',
-    category: 'Transportation',
-    amount: 75,
-    date: new Date(2023, 5, 20),
-    note: 'Gas and parking',
-  },
-  {
-    id: '7',
-    type: 'income',
-    category: 'Freelance Work',
-    amount: 500,
-    date: new Date(2023, 5, 22),
-    note: 'Website design project',
-  },
-  {
-    id: '8',
-    type: 'expense',
-    category: 'Entertainment',
-    amount: 30,
-    date: new Date(2023, 5, 25),
-    note: 'Movie tickets',
-  },
-  {
-    id: '9',
-    type: 'expense',
-    category: 'Subscriptions',
-    amount: 15,
-    date: new Date(2023, 5, 28),
-    note: 'Streaming service',
-  },
-  {
-    id: '10',
-    type: 'expense',
-    category: 'Shopping',
-    amount: 120,
-    date: new Date(2023, 5, 30),
-    note: 'New clothes',
-  },
+];
+
+
+export const mockGoal: SavingsGoal = {
+  id: 'mock-goal',
+  user_id: 'guest',
+  name: 'Vacation Fund',
+  targetAmount: 10000,
+  savedAmount: 2000,
+  deadline: new Date('2025-12-31'),
+};
+
+export const mockBudget: Budget = {
+  id: 'mock-budget',
+  user_id: 'guest',
+  name: 'Monthly Expenses',
+  plannedBudget: 5000,
+  moneySpent: 2500,
+  month: 'july',
+  is_recurring: true,
+};
+
+export const mockTransactionTypes: string[] = [
+  'Salary',
+  'Rent',
+  'Groceries',
+  'Utilities',
+  'Dining Out',
+  'Transfer',
 ];

@@ -8,6 +8,8 @@ import { formatCurrency } from '../utils/formatCurrency';
 import { supabase } from '../lib/supabase';
 import { insertTransactionsForUser } from '../lib/supabaseTransactions';
 import { Transaction } from '../types/transactionsType';
+import { mockTransactionTypes } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
 
 
 
@@ -20,9 +22,15 @@ const Transactions = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [availableTypes, setAvailableTypes] = useState<string[]>([]);
+  const { isGuest } = useAuth();
 
   useEffect(() => {
     const fetchTransactionTypes = async () => {
+      if (isGuest) {
+        setAvailableTypes(mockTransactionTypes);
+        return;
+      }
+
       try {
         const res = await fetch("http://localhost:8000/transaction-type");
         const data = await res.json();

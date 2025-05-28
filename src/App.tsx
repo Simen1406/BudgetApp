@@ -17,6 +17,8 @@ import Layout from './components/layout/Layout';
 import PrivateRoute from './components/auth/PrivateRoute';
 import { useSavingsStore } from './stores/savingsStore';
 import { useTransactionStore } from './stores/transactionStore';
+import { useBudgetStore } from './stores/budgetStore';
+import { mockBudget, mockGoal, mockTransactions } from './data/mockData';
 
 function App() {
   const { user, isGuest, isLoading } = useAuth();
@@ -36,16 +38,21 @@ function App() {
   useEffect(() => {
     const transactionStore = useTransactionStore.getState();
     const savingsStore = useSavingsStore.getState();
+    const budgetStore = useBudgetStore.getState();
+
 
     if (user && appReady && !isGuest) {
       console.log("logged into:", user.id);
       savingsStore.fetchGoals(user.id);
       transactionStore.fetchTransactions(user.id);
+      budgetStore.fetchBudgets(user.id);
+      
     }
 
-    if (user && appReady && isGuest) {
-      transactionStore.setTransactions([]);
-      savingsStore.setGoals([]);
+    if (appReady && isGuest) {
+      transactionStore.setTransactions(mockTransactions);
+      savingsStore.setGoals([mockGoal]);
+      budgetStore.setBudgets([mockBudget]);
     }
   }, [user, appReady, isGuest]);
 

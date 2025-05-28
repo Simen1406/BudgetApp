@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Transaction } from '../types/transactionsType';
 import { supabase } from '../lib/supabase';
+import { mockTransactions } from '../data/mockData';
 
 interface TransactionStore {
   transactions: Transaction[];
@@ -16,25 +17,32 @@ export const useTransactionStore = create<TransactionStore>((set) => ({
   transactions: [],
 
   setTransactions: (transactions) => set({ transactions }),
-  fetchTransactions: async (userId:string) => {
 
+  fetchTransactions: async (userId:string) => {
   const { data, error } = await supabase
   .from('transactions')
   .select('*')
   .eq('user_id', userId)
   .order('date', { ascending: false });
 
-  
   if (error) {
-    console.error('❌ Error fetching from Supabase:', error.message);
+    console.error("error fetching transactions:", error.message);
+    set({transactions: mockTransactions});
+    return;
   }
-  
-  set({ transactions: (data ?? []).map((t) => ({
+
+  if (!data || data.length === 0) {
+    console.log("no transactions found - using mock transactions");
+    set({transactions: mockTransactions});
+    return;
+  }
+
+  const parsed = data.map((t) => ({
     ...t,
     date: new Date(t.date),
-  })) });
-
-  console.log("✅ Zustand state updated with transactions");
+  }));
+  
+  set({ transactions: parsed})
   },
 
 
