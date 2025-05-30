@@ -57,14 +57,21 @@ const Dashboard = () => {
     };
     fetchTransactions();
     }, []);
+
+    const filteredTransactions = useMemo(() => {
+      const sourceTransactions = transactions.length === 0 ? mockTransactions : transactions;
+
+      return transactions.filter((t) => {
+        const transactionMonth = format(new Date(t.date), 'yyyy-MM');
+        return transactionMonth === selectedMonth;
+      });
+    }, [transactions, currentMonth]);
     
     //calculate totals
     const {
       totalIncome,
       totalExpenses,
       netTotal,
-      incomeCount,
-      expenseCount
     } = useMemo(() => {
       return calculateTransactionTotals(transactions, selectedMonth);
       }, [transactions, selectedMonth]);
@@ -131,9 +138,10 @@ const Dashboard = () => {
 
       {/* Content grid */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        
         {/* Recent Transactions */}
         <div className="lg:col-span-2">
-          <RecentTransactions transactions={mockTransactions.slice(0, 5)} />
+          <RecentTransactions transactions={filteredTransactions.slice(0, 5)} />
         </div>
         
         {/* Budget Summary */}

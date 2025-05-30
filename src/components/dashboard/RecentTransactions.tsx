@@ -40,7 +40,7 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
                       {transaction.category}
                     </p>
                     <p className="text-sm text-gray-500 truncate">
-                      {format(transaction.date, 'MMM d, yyyy')}
+                      {format(new Date(transaction.date), 'MMM d, yyyy')}
                     </p>
                   </div>
                   
