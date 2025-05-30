@@ -14,7 +14,7 @@ import { useAuth } from '../hooks/useAuth';
 
 
 const Transactions = () => {
-  const { transactions, addTransaction, addTransactions, deleteTransaction, updateTransaction } = useTransactionStore();
+  const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactionStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,7 +107,7 @@ const Transactions = () => {
     }
 
     // Update Zustand store immediately
-    const { Transactions, setTransactions } = useTransactionStore.getState();
+    const { transactions, setTransactions } = useTransactionStore.getState();
     setTransactions([...transactions, ...inserted]);
 
     alert(`✅ Successfully imported ${inserted.length} transactions`);
