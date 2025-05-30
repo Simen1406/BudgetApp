@@ -20,8 +20,8 @@ A personal budgeting and transaction tracking app that lets you import bank stat
 | Layer       | Tools Used                             |
 |-------------|----------------------------------------|
 | Frontend    | React, TypeScript, Tailwind CSS        |
-| State Mgmt  | Zustand (transaction store)            |
+| State Mgmt  | Zustand                                |
 | CSV Parsing | PapaParse                              |
-| Backend     | Supabase (optional for auth/db)        |
+| Backend     | Supabase for auth/db                   |
 | CSV Cleaner | Python + Pandas                        |
-| Deployment  | Vercel (recommended) 
+
