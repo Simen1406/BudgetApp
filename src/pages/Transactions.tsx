@@ -10,6 +10,7 @@ import { insertTransactionsForUser } from '../lib/supabaseTransactions';
 import { Transaction } from '../types/transactionsType';
 import { mockTransactionTypes } from '../data/mockData';
 import { useAuth } from '../hooks/useAuth';
+import { calculateTransactionTotals } from '../utils/transactionCalculator';
 
 
 
@@ -56,13 +57,15 @@ const Transactions = () => {
       transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
       
     const matchesType = 
-      filterType === 'all' || transaction.type === filterType;
+      filterType === 'all' || transaction.category === filterType;
     
     const transactionMonth = format(new Date(transaction.date), 'yyyy-MM');
     const matchesMonth = transactionMonth === selectedMonth;
       
     return matchesSearch && matchesType && matchesMonth;
   });
+
+  const { totalIncome, totalExpenses, netTotal, incomeCount, expenseCount } = calculateTransactionTotals(transactions, selectedMonth);
 
   const handleExport = () => {
     exportTransactionsToCSV(filteredTransactions);
@@ -286,6 +289,29 @@ const Transactions = () => {
         </div>
       </div>
       
+      {/* 🟡 Standalone Totals Container */}
+    <div className="bg-white shadow-sm rounded-lg p-4 my-4 border border-gray-200">
+      <h3 className="text-lg font-semibold mb-2">Summary for {format(currentMonth, 'MMMM yyyy')}</h3>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <p className="text-sm text-gray-600">Total Income:</p>
+          <p className="text-green-600 font-bold">{totalIncome.toFixed(1)}</p>
+          <p className="text-xs text-gray-500">{incomeCount} {incomeCount === 1 ? 'income transaction' : 'income transactions'}</p>
+        </div>
+        <div className="flex-1">
+          <p className="text-sm text-gray-600">Total Expense:</p>
+          <p className="text-red-600 font-bold">{totalExpenses.toFixed(1)}</p>
+          <p className="text-xs text-gray-500">{expenseCount} {expenseCount === 1 ? 'expense transaction' : 'expense transactions'}</p>
+        </div>
+        <div className="flex-1">
+          <p className="text-sm text-gray-600">Net Total:</p>
+          <p className={netTotal >= 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+            {netTotal.toFixed(1)}
+          </p>
+        </div>
+      </div>
+    </div>
+
       {/* Transactions table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
