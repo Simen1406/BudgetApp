@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { CreditCard, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency } from '../utils/formatCurrency';
@@ -19,10 +19,10 @@ import { calculateTransactionTotals } from '../utils/transactionCalculator';
 
 const Dashboard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   const currentDate = new Date();
-  const selectedMonth = format(new Date(), 'yyyy-MM');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const selectedMonth = format(currentMonth, 'yyyy-MM');
+  
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -57,16 +57,17 @@ const Dashboard = () => {
     };
     fetchTransactions();
     }, []);
-  
+    
+    //calculate totals
     const {
       totalIncome,
       totalExpenses,
       netTotal,
       incomeCount,
       expenseCount
-    } = calculateTransactionTotals(transactions, selectedMonth);
-
-    const savingsRate = totalIncome > 0 ? (netTotal / totalIncome) * 100 : 0;
+    } = useMemo(() => {
+      return calculateTransactionTotals(transactions, selectedMonth);
+      }, [transactions, selectedMonth]);
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -112,29 +113,19 @@ const Dashboard = () => {
           title="Total Income"
           value={formatCurrency(totalIncome)}
           icon={<TrendingUp className="h-6 w-6 text-success-600" />}
-          change={+4.75}
-          trend="up"
+          valueClassName="text-green-600"
         />
         <StatCard
           title="Total Expenses"
           value={formatCurrency(totalExpenses)}
           icon={<TrendingDown className="h-6 w-6 text-danger-600" />}
-          change={-2.1}
-          trend="down"
+          valueClassName="text-red-600"
         />
         <StatCard
-          title="Net Savings"
+          title="Net Total"
           value={formatCurrency(netTotal)}
           icon={<DollarSign className="h-6 w-6 text-primary-600" />}
-          change={+12.4}
-          trend="up"
-        />
-        <StatCard
-          title="Savings Rate"
-          value={`${savingsRate.toFixed(0)}%`}
-          icon={<CreditCard className="h-6 w-6 text-secondary-600" />}
-          change={+5.2}
-          trend="up"
+          valueClassName={netTotal >= 0 ? "text-green-600" : "text-red-600"}
         />
       </div>
 
