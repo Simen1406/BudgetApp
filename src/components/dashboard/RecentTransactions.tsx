@@ -3,6 +3,8 @@ import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Transaction } from '../../types/transactionsType';
+import { useState } from 'react';
+
 
 
 interface RecentTransactionsProps {
@@ -10,6 +12,9 @@ interface RecentTransactionsProps {
 }
 
 const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
+  const [visibleCount, setVisibleCount] = useState(5);
+  const visibleTransactions = transactions.slice(0, visibleCount);
+
   return (
     <div className="card h-full">
       <div className="flex items-center justify-between mb-6">
@@ -21,8 +26,8 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
       
       <div className="overflow-hidden">
         <ul className="divide-y divide-gray-200">
-          {transactions.length > 0 ? (
-            transactions.map((transaction) => (
+          {visibleTransactions.length > 0 ? (
+            visibleTransactions.map((transaction) => (
               <li key={transaction.id} className="py-4 hover:bg-gray-50 px-4 -mx-4 rounded-lg">
                 <div className="flex items-center space-x-4">
                   <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
@@ -56,6 +61,27 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
             <li className="py-4 text-center text-gray-500">No recent transactions</li>
           )}
         </ul>
+        {visibleCount < transactions.length && (
+          <div className='flex justify-center mt-4'>
+            <button
+              onClick={() => setVisibleCount(visibleCount + 10)}
+              className='text-sm text-primary-600 hover:underline'
+              >
+                Show More
+              </button>
+          </div>
+        )}
+
+        {visibleCount > 5 && (
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => setVisibleCount(5)}
+              className="text-sm text-primary-600 hover:underline"
+            >
+              Show less
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -141,7 +141,7 @@ const Dashboard = () => {
         
         {/* Recent Transactions */}
         <div className="lg:col-span-2">
-          <RecentTransactions transactions={filteredTransactions.slice(0, 5)} />
+          <RecentTransactions transactions={filteredTransactions} />
         </div>
         
         {/* Budget Summary */}
