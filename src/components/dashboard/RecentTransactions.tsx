@@ -2,15 +2,8 @@ import { format } from 'date-fns';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { Transaction } from '../../types/transactionsType';
 
-export interface Transaction {
-  id: string;
-  type: 'income' | 'expense';
-  category: string;
-  amount: number;
-  date: Date;
-  note?: string;
-}
 
 interface RecentTransactionsProps {
   transactions: Transaction[];

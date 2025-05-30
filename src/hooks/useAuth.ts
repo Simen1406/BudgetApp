@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useTransactionStore } from '../stores/transactionStore';
-import { useBeforeUnload } from 'react-router-dom';
 import { useBudgetStore } from '../stores/budgetStore';
 import { useSavingsStore } from '../stores/savingsStore';
 import { mockBudget, mockGoal, mockTransactions } from '../data/mockData';
