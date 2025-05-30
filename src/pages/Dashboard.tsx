@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CreditCard, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency } from '../utils/formatCurrency';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
 
 // Components
 import StatCard from '../components/dashboard/StatCard';
@@ -12,21 +14,59 @@ import SavingsGoalsList from '../components/dashboard/SavingsGoalsList';
 // Mock data (will be replaced with actual data from backend)
 import { mockTransactions } from '../data/mockData';
 
+import { Transaction } from '../types/transactionsType';
+import { calculateTransactionTotals } from '../utils/transactionCalculator';
+
 const Dashboard = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   const currentDate = new Date();
+  const selectedMonth = format(new Date(), 'yyyy-MM');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const {
+        data: {session},
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.user) {
+        console.warn("Guest user or not authenticated, loading mock data");
+        setTransactions(mockTransactions);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", session.user.id);
+
+      if (error || !data) {
+        console.error("Error fetching transactions:", error);
+        setTransactions(mockTransactions);
+        return;
+      }
+
+      if (data.length === 0) {
+        console.log("No transactions found for user, using mock data");
+        setTransactions(mockTransactions);
+      } else {
+        setTransactions(data as Transaction[]);
+      }
+    };
+    fetchTransactions();
+    }, []);
   
-  // Calculate stats based on mock data
-  const totalIncome = mockTransactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-    
-  const totalExpenses = mockTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-    
-  const netSavings = totalIncome - totalExpenses;
-  const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
+    const {
+      totalIncome,
+      totalExpenses,
+      netTotal,
+      incomeCount,
+      expenseCount
+    } = calculateTransactionTotals(transactions, selectedMonth);
+
+    const savingsRate = totalIncome > 0 ? (netTotal / totalIncome) * 100 : 0;
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -35,42 +75,34 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">{format(currentDate, 'MMMM d, yyyy')}</p>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <div className="inline-flex rounded-md shadow-sm">
-            <button
-              type="button"
-              onClick={() => setPeriod('daily')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-md ${
-                period === 'daily'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              } border border-gray-300`}
-            >
-              Daily
-            </button>
-            <button
-              type="button"
-              onClick={() => setPeriod('weekly')}
-              className={`px-4 py-2 text-sm font-medium ${
-                period === 'weekly'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              } border-t border-b border-gray-300`}
-            >
-              Weekly
-            </button>
-            <button
-              type="button"
-              onClick={() => setPeriod('monthly')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-md ${
-                period === 'monthly'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              } border border-gray-300`}
-            >
-              Monthly
-            </button>
-          </div>
+
+        {/*month navigation*/}
+        <div className='flex items-center gap-2 mt-4 sm:mt-0'>
+          <button
+            className='btn btn-outline'
+            onClick={() =>{
+              const newDate = new Date (currentMonth);
+              newDate.setMonth(newDate.getMonth() - 1);
+              setCurrentMonth(newDate);
+            }}
+          >
+            Previous
+          </button>
+
+          <span className="text-gray-600 font-medium">
+            {format(currentMonth, 'MMMM-yyyy')}
+          </span>
+
+          <button
+            className='btn btn-outline'
+            onClick={() =>{
+              const newDate = new Date (currentMonth);
+              newDate.setMonth(newDate.getMonth() + 1);
+              setCurrentMonth(newDate);
+            }}
+          >
+            Next
+          </button>
         </div>
       </div>
 
@@ -92,7 +124,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Net Savings"
-          value={formatCurrency(netSavings)}
+          value={formatCurrency(netTotal)}
           icon={<DollarSign className="h-6 w-6 text-primary-600" />}
           change={+12.4}
           trend="up"
