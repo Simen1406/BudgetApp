@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/useAuth';
 
 
 
+
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactionStore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +25,10 @@ const Transactions = () => {
   const [availableTypes, setAvailableTypes] = useState<string[]>([]);
   const { isGuest } = useAuth();
 
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const selectedMonth = format (currentMonth, 'yyyy-MM');
+
+  
   useEffect(() => {
     const fetchTransactionTypes = async () => {
       if (isGuest) {
@@ -52,8 +57,11 @@ const Transactions = () => {
       
     const matchesType = 
       filterType === 'all' || transaction.type === filterType;
+    
+    const transactionMonth = format(new Date(transaction.date), 'yyyy-MM');
+    const matchesMonth = transactionMonth === selectedMonth;
       
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesMonth;
   });
 
   const handleExport = () => {
@@ -151,19 +159,47 @@ const Transactions = () => {
     <div className="space-y-6 animate-slide-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-        <div className="mt-4 sm:mt-0">
-          <button 
-            className="btn btn-primary flex items-center"
-            onClick={() => {
-              setEditingTransaction(null);
-              setIsModalOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Transaction
-          </button>
-        </div>
-      </div>
+        <div className="mt-4 sm:mt-0 flex items-center justify-end space-x-2">
+          {/*month navigation buttons*/}
+           <button
+              className="btn btn-outline"
+              onClick={() => {
+                const newDate = new Date(currentMonth);
+                newDate.setMonth(newDate.getMonth() - 1);
+                setCurrentMonth(newDate);
+              }}
+            >
+              Previous
+            </button>
+            <span className="text-gray-600 font-medium">
+              {format(currentMonth, 'MMMM yyyy')}
+            </span>
+            <button
+              className="btn btn-outline"
+              onClick={() => {
+                const newDate = new Date(currentMonth);
+                newDate.setMonth(newDate.getMonth() + 1);
+                setCurrentMonth(newDate);
+              }}
+            >
+              Next
+            </button>
+
+            {/* Spacing */}
+            <div className="ml-4"></div>
+              <button 
+                className="btn btn-primary flex items-center"
+                onClick={() => {
+                  setEditingTransaction(null);
+                  setIsModalOpen(true);
+                }}
+              >
+                {/*transaction button*/}
+                <Plus className="h-4 w-4 mr-2" />
+                Add Transaction
+              </button>
+            </div>
+          </div>
       
       {/* Filters and search */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
