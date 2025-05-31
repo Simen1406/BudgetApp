@@ -4,7 +4,7 @@ import io
 
 
 #Columns to remove
-SENSITIVE_FIELDS = ['Bokført dato', 'Rentedato', 'Beskrivelse', 'Fra konto', 'Avsender', 'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr']
+SENSITIVE_FIELDS = ['Bokført dato', 'Rentedato', 'Fra konto', 'Avsender', 'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr']
 
 #function to remove unneccecary columns and rows. 
 def clean_bank_statement(input_path: str, output_path: str):
@@ -15,7 +15,7 @@ def clean_bank_statement(input_path: str, output_path: str):
 
     
     #Change from norwegian to english column names
-    df.rename(columns={'Utført dato': 'date', 'Beløp ut': 'expense', 'Type' : 'type', 'Beløp inn' : 'income'}, inplace=True)
+    df.rename(columns={'Utført dato': 'date', 'Beløp ut': 'expense', 'Type' : 'type', 'Beløp inn' : 'income', 'beskrivelse' : 'description'}, inplace=True)
     df.dropna(subset=['date'], inplace=True)
 
     #adds the category column 
@@ -36,26 +36,12 @@ def clean_bank_statement(input_path: str, output_path: str):
     df.dropna(subset=['date'], inplace=True)
        
      # Reorder columns explicitly to match supabase transactions table
-    df = df[['date', 'type', 'category', 'amount']]
+    df = df[['date', 'type', 'category', 'amount', 'description']]
 
     # Ensures that output folder exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
 
-
-
-
-
-"""#this parts need to be edited to automatically match input file and create correct output filename. for now its ok for testing.
-months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
-months_year_csv = []
-year = "2025"
-
-for month in months:
-    months_year_csv.append(month + year + ".csv")
-
-full_output_path = "data/cleaned/cleaned" + months_year_csv[3]
-full_input_path = "data/raw/" + months_year_csv[3]"""
 
 
 partial_input_path = "data/raw/"
@@ -68,10 +54,9 @@ if __name__ == "__main__":
         output_path = partial_output_path + "april2025cleaned" + csv_path
     )
 
-
 def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
     SENSITIVE_FIELDS = [
-        'Bokført dato', 'Rentedato', 'Beskrivelse', 'Fra konto', 'Avsender',
+        'Bokført dato', 'Rentedato', 'Fra konto', 'Avsender',
         'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr'
     ]
 
@@ -82,7 +67,8 @@ def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
         'Utført dato': 'date',
         'Beløp ut': 'expense',
         'Beløp inn': 'income',
-        'Type': 'type'
+        'Type': 'type',
+        'Beskrivelse': 'description'
     }, inplace=True)
 
     df.dropna(subset=['date'], inplace=True)
@@ -101,4 +87,6 @@ def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
     df['date'] = pd.to_datetime(df['date'], format='%d.%m.%Y', errors='coerce').dt.strftime('%Y-%m-%d')
     df.dropna(subset=['date'], inplace=True)
 
-    return df[['date', 'type', 'category', 'amount']]
+    df['description'] = df['description'].fillna('')
+
+    return df[['date', 'type', 'category', 'amount', 'description']]

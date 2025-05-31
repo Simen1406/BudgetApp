@@ -9,14 +9,14 @@ interface TransactionModalProps {
     category: 'income' | 'expense';
     amount: number;
     date: Date;
-    beskrivelse: string;
+    description: string;
   }) => void;
   transaction?: {
     type: string;
     category: 'income' | 'expense';
     amount: number;
     date: Date;
-    beskrivelse: string;
+    description: string;
   };
   availableTypes: string[];
 }
@@ -28,7 +28,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
   const [date, setDate] = useState(
     transaction?.date?.toISOString().split('T')[0] || 
     new Date().toISOString().split('T')[0]);
-  const [beskrivelse, setBeskrivelse] = useState(transaction?.beskrivelse || '');
+  const [description, setDescription] = useState(transaction?.description || '');
 
   useEffect(() => {
     if (transaction) {
@@ -36,13 +36,13 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
       setCategory(transaction.category);
       setAmount(transaction.amount.toString());
       setDate(transaction.date.toISOString().split('T')[0]);
-      setBeskrivelse(transaction.beskrivelse || '');
+      setDescription(transaction.description || '');
     } else {
       setType('');
       setCategory('expense');
       setAmount('');
       setDate(new Date().toISOString().split('T')[0]);
-      setBeskrivelse('');
+      setDescription('');
     }
   }, [transaction]);
 
@@ -53,7 +53,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
       category,
       amount: parseFloat(amount),
       date: new Date(date),
-      beskrivelse,
+      description,
     });
     onClose();
   };
@@ -92,7 +92,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
                   type="radio"
                   value="expense"
                   checked={category === 'expense'}
-                  onChange={(e) => setCategory("expense")}
+                  onChange={() => setCategory("expense")}
                   className="mr-2"
                 />
                 Expense
@@ -145,16 +145,16 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
             />
           </div>
 
-          {/*beskrivelse*/}
+          {/*description*/}
           <div>
-            <label htmlFor='beskrivelse' className='block text-sm font-medium text-gray-700'>
+            <label htmlFor='description' className='block text-sm font-medium text-gray-700'>
               Description
             </label>
             <input
-            id='beskrivelse'
+            id='description'
             type='text'
-            value={beskrivelse}
-            onChange={(e) => setBeskrivelse(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="form-input"
             />
           </div>
