@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase';
 import BudgetModal from '../components/budgets/BudgetModal';
 import { mockBudget } from '../data/mockData';
 import { Budget } from '../types/budget';
+import { calculateFoodSpentForMonth } from '../utils/budgetHelper'
+import { format } from 'date-fns';
+import { Transaction } from '../types/transactionsType';
 
 
 type BudgetStore = {
@@ -15,6 +18,7 @@ type BudgetStore = {
   deleteBudget: (id: string) => Promise<void>;
   setBudgets: (budgets: Budget[]) => void;
   setCurrentMonth: (date: Date) => void;
+  fetchAndSyncFoodBudget: (userId: string, transactions: Transaction[], currentMonth: Date) => Promise<void>;
 }
 
 
@@ -55,6 +59,42 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
     loading: false,
   });
 },
+  fetchAndSyncFoodBudget: async (userId: string, transactions : Transaction[], currentMonth: Date) => {
+    const monthString = format(currentMonth, 'yyyy-MM');
+    const spent = calculateFoodSpentForMonth(transactions, currentMonth);
+    const plannedAmount = 4000;
+
+    const { data: existingBudgets, error } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('month', monthString)
+      .eq('name', 'food');
+
+    if (error) {
+      console.error("error fethcing budgets", error);
+      return;
+    }
+
+    if (existingBudgets && existingBudgets.length > 0) {
+      await supabase
+        .from('budgets')
+        .update({ moneySpent: spent, plannedBudget: plannedAmount })
+        .eq('id', existingBudgets[0].id);
+    } else {
+      await supabase
+      .from('budgets')
+      .insert({
+        user_id: userId,
+        name: 'food',
+        plannedBudget: plannedAmount,
+        moneySpent: spent,
+        month: monthString,
+        is_recurring: false,
+      });
+    }
+    await get().fetchBudgets(userId, monthString);
+  },
   
   // Creation, update, deletion of budgets by user 
   addBudget: async (budget, userId) => {
