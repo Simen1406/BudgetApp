@@ -333,6 +333,9 @@ const Transactions = () => {
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -373,6 +376,10 @@ const Transactions = () => {
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </td>
+
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right'>
+                      {transaction.description || '-'}
+                    </td>
                 </tr>
               ))}
             </tbody>

@@ -5,5 +5,5 @@ export type Transaction = {
   type: string;
   category: 'income' | 'expense';
   amount: number;
-  beskrivelse: string;
+  description: string;
 };
