@@ -9,20 +9,17 @@ interface TransactionModalProps {
     category: 'income' | 'expense';
     amount: number;
     date: Date;
+    beskrivelse: string;
   }) => void;
   transaction?: {
     type: string;
     category: 'income' | 'expense';
     amount: number;
     date: Date;
+    beskrivelse: string;
   };
   availableTypes: string[];
 }
-
-const categories = {
-  income: ['Salary', 'Freelance', 'Investments', 'Other Income'],
-  expense: ['Housing', 'Food', 'Transportation', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Other']
-};
 
 const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes }: TransactionModalProps) => {
   const [type, setType] = useState(transaction?.type || '');
@@ -30,8 +27,8 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
   const [amount, setAmount] = useState(transaction?.amount?.toString() || '');
   const [date, setDate] = useState(
     transaction?.date?.toISOString().split('T')[0] || 
-    new Date().toISOString().split('T')[0]
-  );
+    new Date().toISOString().split('T')[0]);
+  const [beskrivelse, setBeskrivelse] = useState(transaction?.beskrivelse || '');
 
   useEffect(() => {
     if (transaction) {
@@ -39,11 +36,13 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
       setCategory(transaction.category);
       setAmount(transaction.amount.toString());
       setDate(transaction.date.toISOString().split('T')[0]);
+      setBeskrivelse(transaction.beskrivelse || '');
     } else {
       setType('');
       setCategory('expense');
       setAmount('');
       setDate(new Date().toISOString().split('T')[0]);
+      setBeskrivelse('');
     }
   }, [transaction]);
 
@@ -54,6 +53,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
       category,
       amount: parseFloat(amount),
       date: new Date(date),
+      beskrivelse,
     });
     onClose();
   };
@@ -130,7 +130,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
               className="form-input"
               required
             />
-            </div>
+          </div>
 
           {/* date */}
           <div>
@@ -142,6 +142,20 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
               onChange={(e) => setDate(e.target.value)}
               className="form-input"
               required
+            />
+          </div>
+
+          {/*beskrivelse*/}
+          <div>
+            <label htmlFor='beskrivelse' className='block text-sm font-medium text-gray-700'>
+              Description
+            </label>
+            <input
+            id='beskrivelse'
+            type='text'
+            value={beskrivelse}
+            onChange={(e) => setBeskrivelse(e.target.value)}
+            className="form-input"
             />
           </div>
 
