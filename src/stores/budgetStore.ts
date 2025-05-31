@@ -63,13 +63,19 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
     const monthString = format(currentMonth, 'yyyy-MM');
     const spent = calculateFoodSpentForMonth(transactions, currentMonth);
     const plannedAmount = 4000;
+    /*
+    function normalizeCategoryName(name:string) {
+      if (!name) return '';
+      return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    }
+    const normalizedCategory = normalizeCategoryName('food');*/
 
     const { data: existingBudgets, error } = await supabase
       .from('budgets')
       .select('*')
       .eq('user_id', userId)
       .eq('month', monthString)
-      .eq('name', 'food');
+      .ilike('name', 'food');
 
     if (error) {
       console.error("error fethcing budgets", error);
@@ -77,10 +83,13 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
     }
 
     if (existingBudgets && existingBudgets.length > 0) {
+      const existingBudget = existingBudgets[0];
       await supabase
         .from('budgets')
-        .update({ moneySpent: spent, plannedBudget: plannedAmount })
-        .eq('id', existingBudgets[0].id);
+        .update({
+          moneySpent: spent,
+          plannedBudget: existingBudget.plannedBudget || plannedAmount, })
+        .eq('id', existingBudget[0].id);
     } else {
       await supabase
       .from('budgets')
