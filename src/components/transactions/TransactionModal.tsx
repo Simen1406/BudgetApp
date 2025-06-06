@@ -57,6 +57,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
       amount: parseFloat(amount),
       date: new Date(date),
       description,
+      is_recurring: isRecurring
     });
     onClose();
   };

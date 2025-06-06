@@ -7,10 +7,11 @@ import TransactionModal from '../components/transactions/TransactionModal';
 import { formatCurrency } from '../utils/formatCurrency';
 import { supabase } from '../lib/supabase';
 import { insertTransactionsForUser } from '../lib/supabaseTransactions';
-import { Transaction } from '../types/transactionsType';
+import { Transaction, defaultTransactionTypes } from '../types/transactionsType';
 import { mockTransactionTypes } from '../data/mockData';
 import { useAuth } from '../hooks/useAuth';
 import { calculateTransactionTotals } from '../utils/transactionCalculator';
+import { merge } from 'chart.js/helpers';
 
 
 
@@ -43,7 +44,8 @@ const Transactions = () => {
         const data = await res.json();
 
         if (Array.isArray(data)) {
-          setAvailableTypes(data);
+          const mergedTypes = Array.from(new Set([...defaultTransactionTypes, ...data]));
+          setAvailableTypes(mergedTypes);
         }
       } catch (err) {
         console.error("Error fetching transaction types:", err);
