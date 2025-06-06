@@ -14,5 +14,7 @@ export const defaultTransactionTypes = [
   'Loan payment',
   'Rent',
   'Utilities',
+  'insurance',
+  'felleskostnader'
   //More can be added later
 ]
