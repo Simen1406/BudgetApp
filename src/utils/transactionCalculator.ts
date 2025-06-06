@@ -5,10 +5,9 @@ export const calculateTransactionTotals = (transactions: Transaction[], selected
   const filteredTransactions = transactions.filter((t) => {
     const transactionMonth = format(
         typeof t.date === 'string' ? new Date(t.date): t.date, 'yyyy-MM');
-    return transactionMonth === selectedMonth;
+    const isRecurring = t.is_recurring === true
+    return isRecurring || transactionMonth === selectedMonth;
   });
-  //console.log("selected month", selectedMonth);
-  //console.log('Filtered Transactions:', filteredTransactions);
 
   const incomeTransactions = filteredTransactions.filter((t) => t.category === 'income');
   const expenseTransactions = filteredTransactions.filter((t) => t.category === 'expense');
