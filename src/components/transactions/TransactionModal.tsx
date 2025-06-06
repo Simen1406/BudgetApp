@@ -29,6 +29,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
     transaction?.date?.toISOString().split('T')[0] || 
     new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState(transaction?.description || '');
+  const [isRecurring, setIsRecurring] = useState(transaction?.is_recurring || false);
 
   useEffect(() => {
     if (transaction) {
@@ -37,12 +38,14 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
       setAmount(transaction.amount.toString());
       setDate(transaction.date.toISOString().split('T')[0]);
       setDescription(transaction.description || '');
+      setIsRecurring(transaction.is_recurring || false);
     } else {
       setType('');
       setCategory('expense');
       setAmount('');
       setDate(new Date().toISOString().split('T')[0]);
       setDescription('');
+      setIsRecurring(false);
     }
   }, [transaction]);
 
@@ -157,6 +160,19 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
             onChange={(e) => setDescription(e.target.value)}
             className="form-input"
             />
+          </div>
+
+          {/* Recurring transaction checkbox */}
+          <div>
+            <label className='inline-flex items-center'>
+              <input
+                type='checkbox'
+                checked={isRecurring}
+                onChange={() => setIsRecurring(!isRecurring)}
+                className='mr-2'
+                />
+                Recurring transaction
+            </label>
           </div>
 
           {/* actions */}

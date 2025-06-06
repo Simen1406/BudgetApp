@@ -20,6 +20,7 @@ const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -132,6 +133,11 @@ const Transactions = () => {
     fileInputRef.current.value = '';
   }
 };
+
+  const handleSaveRecurringTransaction = (TransactionData) => {
+    addTransaction({...TransactionData, is_recurring: true });
+    setIsRecurringModalOpen(false);
+  };
 
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -276,6 +282,28 @@ const Transactions = () => {
                 <Upload className="h-4 w-4 mr-2" />
                 Import Raw CSV
               </button>
+              
+              <div className='relative group'>
+                <button
+                  className='btn btn-primary flex items-center'
+                  onClick={() => {setIsRecurringModalOpen(true)
+                  //open recurring transaction modal
+                  }}
+                >
+                  Add recurring transaction
+                </button>
+
+                <div
+                  className='absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2
+                            opacity-0 group-hover:opacity-100
+                            bg-gray-800 text-white text-xs rounded py-1 px-3
+                            whitespace-nowrap pointer-events-none
+                            transition-opacity duration-300 z-50'
+                >
+                  Use this for adding your monthly transactions like loan payments and utilities.
+                </div>
+              </div>
+            </div>
 
               <input
                 type="file"
@@ -287,7 +315,6 @@ const Transactions = () => {
             </div>
           </div>
         </div>
-      </div>
       
       {/* 🟡 Standalone Totals Container */}
     <div className="bg-white shadow-sm rounded-lg p-4 my-4 border border-gray-200">
@@ -401,6 +428,13 @@ const Transactions = () => {
         }}
         onSave={handleSave}
         transaction={editingTransaction || undefined}
+        availableTypes={availableTypes}
+      />
+
+      <TransactionModal
+        isOpen = {isRecurringModalOpen}
+        onClose={() => setIsRecurringModalOpen(false)}
+        onSave = {handleSaveRecurringTransaction}
         availableTypes={availableTypes}
       />
     </div>

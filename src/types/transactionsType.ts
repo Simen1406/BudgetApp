@@ -6,4 +6,5 @@ export type Transaction = {
   category: 'income' | 'expense';
   amount: number;
   description: string;
+  is_recurring?: boolean;
 };
