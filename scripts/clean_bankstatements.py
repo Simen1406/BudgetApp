@@ -10,6 +10,10 @@ SENSITIVE_FIELDS = ['Bokført dato', 'Rentedato', 'Fra konto', 'Avsender', 'Til 
 def clean_bank_statement(input_path: str, output_path: str):
     df = pd.read_csv(input_path, encoding="latin1", delimiter=";")
 
+     # Delete rows with 'Undertype' == 'Overføring til egen konto' (case-insensitive)
+    if 'Undertype' in df.columns:
+        df = df[df['Undertype'].str.lower() != 'Overføring til egen konto']
+
     #Drops any columns listed in SENSITIVE_FIELDS if they exist in the file
     df = df.drop(columns=[col for col in SENSITIVE_FIELDS if col in df.columns], errors='ignore')
 
@@ -56,11 +60,16 @@ if __name__ == "__main__":
 
 def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
     SENSITIVE_FIELDS = [
-        'Bokført dato', 'Rentedato', 'Fra konto', 'Avsender',
+        'Bokført dato', 'Rentedato', 'Fra konto', 'Undertype', 'Avsender',
         'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr'
     ]
 
     df = df.copy()
+
+    #delete rows that have "undertype" == 'overføring til egen konto'
+    if 'Undertype' in df.columns:
+        df = df[df['Undertype'] != 'Overføring til egen konto']
+
     df = df.drop(columns=[col for col in SENSITIVE_FIELDS if col in df.columns], errors='ignore')
 
     df.rename(columns={

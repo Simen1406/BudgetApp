@@ -5,18 +5,27 @@ import { format } from 'date-fns';
 import { useBudgetStore } from '../stores/budgetStore';
 import BudgetModal from '../components/budgets/BudgetModal';
 import { formatCurrency } from '../utils/formatCurrency';
+import { useTransactionStore } from '../stores/transactionStore';
 
 
 const Budgets = () => {
-  const { budgets, loading, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
+  const { budgets, loading, fetchAndSyncFoodBudget, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
   const {currentMonth, setCurrentMonth} = useBudgetStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<typeof budgets[0] | null>(null);
   const { user } = useAuth();
 
+  const {transactions} = useTransactionStore();
+
   const selectedMonth = format(currentMonth, 'yyyy-MM');
   const monthName = format(currentMonth, 'MMMM yyyy');
   
+  //Sync food budget with data from transactions
+  useEffect(() => {
+    if (!user || !transactions.length) return;
+
+    fetchAndSyncFoodBudget(user.id, transactions, currentMonth);
+  }, [user, transactions, currentMonth]);
 
 
   //fetch budgets
@@ -25,11 +34,12 @@ const Budgets = () => {
   fetchBudgets(user.id, selectedMonth);
 }, [user, selectedMonth]);
 
- useEffect(() => {
-  return () => {
-    useBudgetStore.setState({ budgets: []});
-  };
-}, []);
+  useEffect(() => {
+    return () => {
+      useBudgetStore.setState({ budgets: []});
+    };
+  }, []);
+
 
 {/*}
   if (loading) {
