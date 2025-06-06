@@ -21,6 +21,7 @@ type BudgetStore = {
   fetchAndSyncFoodBudget: (userId: string, transactions: Transaction[], currentMonth: Date) => Promise<void>;
 }
 
+const budgetCache = new Map<string, Budget[]>();
 
 export const useBudgetStore = create<BudgetStore>((set, get) => ({
   budgets: [],
@@ -33,7 +34,10 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
 
   //fetch budgets
   fetchBudgets: async (userId, month) => {
-  set({ loading: true, budgets: [] });
+    if (budgetCache.has(month)) {
+      set({ budgets: budgetCache.get(month)!, loading:false });
+      return;
+    }
 
     const [monthly, recurring] = await Promise.all([
     supabase
@@ -54,10 +58,10 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
     combinedMap.set(b.id, b)
   );
 
-  set({
-    budgets: Array.from(combinedMap.values()),
-    loading: false,
-  });
+   const budgets = Array.from(combinedMap.values());
+    budgetCache.set(month, budgets)
+
+    set({budgets, loading:false});
 },
   fetchAndSyncFoodBudget: async (userId: string, transactions : Transaction[], currentMonth: Date) => {
     const monthString = format(currentMonth, 'yyyy-MM');
@@ -89,7 +93,7 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
         .update({
           moneySpent: spent,
           plannedBudget: existingBudget.plannedBudget || plannedAmount, })
-        .eq('id', existingBudget[0].id);
+        .eq('id', existingBudget.id);
     } else {
       await supabase
       .from('budgets')

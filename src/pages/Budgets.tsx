@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -16,6 +16,7 @@ const Budgets = () => {
   const { user } = useAuth();
 
   const {transactions} = useTransactionStore();
+  const memorizedTransactions = useMemo(() => transactions, [transactions.length]);
 
   const selectedMonth = format(currentMonth, 'yyyy-MM');
   const monthName = format(currentMonth, 'MMMM yyyy');
@@ -25,7 +26,7 @@ const Budgets = () => {
     if (!user || !transactions.length) return;
 
     fetchAndSyncFoodBudget(user.id, transactions, currentMonth);
-  }, [user, transactions, currentMonth]);
+  }, [user, memorizedTransactions, currentMonth]);
 
 
   //fetch budgets
@@ -34,11 +35,8 @@ const Budgets = () => {
   fetchBudgets(user.id, selectedMonth);
 }, [user, selectedMonth]);
 
-  useEffect(() => {
-    return () => {
-      useBudgetStore.setState({ budgets: []});
-    };
-  }, []);
+
+ 
 
 
 {/*}
@@ -227,6 +225,13 @@ const Budgets = () => {
           </table>
         </div>
       </div>
+
+      {/*loading*/}
+      {loading && (
+        <div className='absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center <-10 pointer-events-none'>
+          <span className='text-gray-700 font-medium'>Loading...</span>
+        </div>
+      )}
 
       <BudgetModal
         isOpen={isModalOpen}

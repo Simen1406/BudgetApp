@@ -21,10 +21,33 @@ export function calculateFoodSpentForMonth(
 ): number {
     const selectedMonth = format(currentMonth, 'yyyy-MM');
 
-    return transactions
-        .filter(tx => {
-            const txMonth = format(new Date(tx.date), 'yyyy-MM');
-            return txMonth === selectedMonth && isFoodTransaction(tx.description);
-        })
-        .reduce((sum, tx) => sum + tx.amount, 0);
+    const matchedTransactions = transactions.filter(tx => {
+        const txMonth = format(new Date(tx.date), 'yyyy-MM');
+        
+        if (txMonth !== selectedMonth) return false;
+        if (tx.category !== 'expense') return false
+
+        return isFoodTransaction(tx.description);
+    });
+
+    console.log("calculating food budget. matched transactions:");
+    matchedTransactions.forEach(tx => {
+        console.log(`Date: ${tx.date}, amount: ${tx.amount}, Description: ${tx.description}`);
+    });
+
+    return matchedTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 }
+
+export function calculateRecurringExpenses(
+    transactions: Transaction[],
+    currentMonth: Date
+    ): number {
+    const selectedMonth = format(currentMonth, 'yyyy-MM');
+
+    return transactions
+    .filter((tx) => {
+        const txMonth = format(new Date(tx.date), 'yyyy-MM');
+        return tx.is_recurring === true && tx.category === 'expense' && txMonth === selectedMonth;
+    })
+    .reduce((sum, tx) => sum + tx.amount, 0);
+    }
