@@ -54,14 +54,16 @@ const Transactions = () => {
   }, []);
   
   const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch = 
-      transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
       
-    const matchesType = 
-      filterType === 'all' || transaction.category === filterType;
+    const matchesType = filterType === 'all' || transaction.category === filterType;
     
     const transactionMonth = format(new Date(transaction.date), 'yyyy-MM');
     const matchesMonth = transactionMonth === selectedMonth;
+
+    const isVisible = transaction.is_recurring === true || matchesMonth;
+
+    return matchesSearch && matchesType && isVisible;
       
     return matchesSearch && matchesType && matchesMonth;
   });
