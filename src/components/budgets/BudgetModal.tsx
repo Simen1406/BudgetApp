@@ -42,9 +42,14 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
     if (budget) {
       setName(budget.name);
       setPlannedBudget(budget.plannedBudget.toString());
-      setMoneySpent(budget.moneySpent.toString());
+      setMoneySpent(budget.moneySpent !== undefined ? budget.moneySpent.toString() : '0');
       setMonth(budget.month);
       setIsRecurring(budget.is_recurring)
+    } else {
+      setName('');
+      setPlannedBudget('');
+      setMoneySpent('0');
+      setMonth(new Date().toISOString().slice(0,7));
     }
   }, [budget]);
 

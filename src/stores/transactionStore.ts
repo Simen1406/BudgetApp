@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { Transaction } from '../types/transactionsType';
 import { supabase } from '../lib/supabase';
 import { mockTransactions, mockTransactionTypes } from '../data/mockData';
+import { useBudgetStore } from './budgetStore';
+import { foodStoreKeywords } from '../components/budgets/budgetCategories'; 
 
 interface TransactionStore {
   transactions: Transaction[];
@@ -13,7 +15,7 @@ interface TransactionStore {
   deleteTransaction: (id: string) => Promise<void>;
 }
 
-export const useTransactionStore = create<TransactionStore>((set) => ({
+export const useTransactionStore = create<TransactionStore>((set, get) => ({
   transactions: [],
 
   setTransactions: (transactions) => set({ transactions }),
@@ -57,10 +59,21 @@ export const useTransactionStore = create<TransactionStore>((set) => ({
       console.error('Insert error:', error.message);
       return;
     }
+    
+    const newTransaction = {...data, date:new Date(data.date)};
 
     set((state) => ({
       transactions: [{ ...data, date: new Date(data.date) }, ...state.transactions],
     }));
+    const isFood = foodStoreKeywords.some(keyword =>
+      newTransaction.description.toLowerCase().includes(keyword)
+    );
+
+    if (isFood) {
+      const { fetchAndSyncFoodBudget } = useBudgetStore.getState();
+      console.log('Re-syncing Food budget because new food transaction was added.');
+      await fetchAndSyncFoodBudget(transaction.user_id, get().transactions, new Date(transaction.date));
+    }
   },
 
   addTransactions: async (transactions, userId) => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, /*useMemo*/ } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,30 +10,73 @@ import { useTransactionStore } from '../stores/transactionStore';
 
 const Budgets = () => {
   const { budgets, loading, fetchAndSyncFoodBudget, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
-  const {currentMonth, setCurrentMonth} = useBudgetStore();
+  //const {currentMonth, setCurrentMonth} = useBudgetStore();
+  const currentMonth = useBudgetStore(state => state.currentMonth)
+  const setCurrentMonth = useBudgetStore(state => state.setCurrentMonth)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<typeof budgets[0] | null>(null);
   const { user } = useAuth();
 
   const {transactions} = useTransactionStore();
-  const memorizedTransactions = useMemo(() => transactions, [transactions.length]);
+  //const memorizedTransactions = useMemo(() => transactions, [transactions]);
 
   const selectedMonth = format(currentMonth, 'yyyy-MM');
-  const monthName = format(currentMonth, 'MMMM yyyy');
+  //const monthName = format(currentMonth, 'MMMM yyyy');
+
+
+  //fetch budgets and sync with transaction for current month
+  useEffect(() => {
+    if (!user || transactions.length) return;
+
+    const runInitialLoad = async () => {
+      console.log("fetching budgets and syncing food budgets with food transactions");
+      try {
+        await fetchBudgets(user.id, selectedMonth);
+        await fetchAndSyncFoodBudget(user.id, transactions, currentMonth);
+      } catch (error) {
+        console.error("error during inital load", error);
+      }
+    };
+
+    runInitialLoad();
+  },[user, transactions, selectedMonth, currentMonth]);
+
+  useEffect(() => {
+  if (!user || !transactions.length) return;
+
+  console.log("🔄 Re-syncing Food budget’s moneySpent after transactions update.");
+  fetchAndSyncFoodBudget(user.id, transactions, currentMonth);
+}, [user, transactions, transactions.length, currentMonth]);
+
+  
+
+
+/*
+   //fetch budgets
+  useEffect(() => {
+  if (!user) return;
+
+    const timer = setTimeout(() => {
+      fetchBudgets(user.id, selectedMonth);
+    }, 100);
+
+    return () => clearTimeout(timer);
+}, [user, selectedMonth]);
   
   //Sync food budget with data from transactions
   useEffect(() => {
-    if (!user || !transactions.length) return;
-
+  if (!user || transactions.length === 0) { 
+    console.log("waiting for transactions to load");
+    return;
+  }
+  const timer = setTimeout(() => {
     fetchAndSyncFoodBudget(user.id, transactions, currentMonth);
-  }, [user, memorizedTransactions, currentMonth]);
+  }, 100);
 
+  return () => clearTimeout(timer);
+}, [user, transactions, currentMonth]);
 
-  //fetch budgets
-  useEffect(() => {
-  if (!user) return;
-  fetchBudgets(user.id, selectedMonth);
-}, [user, selectedMonth]);
+*/
 
 
  
@@ -64,7 +107,7 @@ const Budgets = () => {
     }
   };
 
-  const handleSave = (budgetData: {
+  const handleSave = async (budgetData: {
     name: string;
     plannedBudget: number;
     moneySpent: number;
@@ -73,10 +116,18 @@ const Budgets = () => {
   }) => {
     if (!user) return;
 
-    if (selectedBudget) {
-      updateBudget(selectedBudget.id, budgetData);
-    } else {
-      addBudget(budgetData, user.id);
+    try {
+      if (selectedBudget) {
+        await updateBudget(selectedBudget.id, budgetData);
+        console.log(budgets.find(b => b.id === selectedBudget.id));
+      } else {
+        await addBudget(budgetData, user.id);
+      }
+
+      setIsModalOpen(false);
+      setSelectedBudget(null);
+    } catch (error) {
+      console.error('Failed to save budget:', error);
     }
   };
   
@@ -106,6 +157,7 @@ const Budgets = () => {
             onClick={() => {
               const newDate = new Date(currentMonth);
               newDate.setMonth(newDate.getMonth() + 1);
+              console.log('Switching to:', newDate);
               setCurrentMonth(newDate);
             }}
           >
