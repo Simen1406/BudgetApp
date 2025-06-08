@@ -25,7 +25,7 @@ def verify_jwt(authorization: str = Header(...)):
             token,
             SUPABASE_JWT_SECRET,
             algorithms=["HS256"],
-            options={"verify_exp": False}  # Only for testing
+            audience="authenticated"   # Only for testing
         )
         print("✅ Decoded payload:", payload)
         return payload
