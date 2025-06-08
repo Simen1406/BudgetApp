@@ -17,7 +17,7 @@ def verify_jwt(authorization: str = Header(...)):
     
     token = authorization.replace("Bearer ", "")
     try:
-        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], options={"verify_exp": False})
         return payload
     except jwt.PyJWTError:
         raise HTTPException(status_code=403, detail="Invalid  or expired token")
