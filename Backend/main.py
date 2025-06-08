@@ -12,15 +12,26 @@ import os
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 
 def verify_jwt(authorization: str = Header(...)):
+    print("✅ Received Authorization header:", authorization)
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=403, detail="Invalid authorization header")
     
     token = authorization.replace("Bearer ", "")
+    print("✅ JWT to decode:", token[:30] + "...")
+    print("✅ SUPABASE_JWT_SECRET:", repr(SUPABASE_JWT_SECRET))
+
     try:
-        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], options={"verify_exp": False})
+        payload = jwt.decode(
+            token,
+            SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_exp": False}  # Only for testing
+        )
+        print("✅ Decoded payload:", payload)
         return payload
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=403, detail="Invalid  or expired token")
+    except jwt.PyJWTError as e:
+        print("❌ JWT decode error:", e)
+        raise HTTPException(status_code=403, detail=str(e))
 
 app = FastAPI()
 
