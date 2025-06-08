@@ -85,7 +85,7 @@ const Transactions = () => {
 
     const {data, error: sessionError } = await supabase.auth.getSession();
     const session = data.session;
-    console.log("JWT:" session?.access_token);
+    console.log("JWT:", session?.access_token);
 
     if (sessionError || !session) {
       throw new Error("user not logged in or authenticated");
