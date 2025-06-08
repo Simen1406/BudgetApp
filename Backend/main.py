@@ -11,7 +11,7 @@ app = FastAPI()
 # Enable CORS for your frontend app
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # <- Change this to your React dev URL
+    allow_origins=["http://localhost:5173", "https://budgetm.onrender.com"],  # <- Change this to your React dev URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
