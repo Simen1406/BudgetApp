@@ -5,6 +5,22 @@ import pandas as pd
 import io
 from pathlib import Path
 import traceback
+from fastapi import Header, HTTPException, Depends
+import jwt
+import os
+
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+
+def verify_jwt(authorization: str = Header(...)):
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=403, detail="Invalid authorization header")
+    
+    token = authorization.replace("Bearer ", "")
+    try:
+        payload = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"])
+        return payload
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=403, detail="Invalid  or expired token")
 
 app = FastAPI()
 
@@ -22,7 +38,7 @@ def root():
     return {"status": "API running"}
 
 @app.post("/clean-csv")
-async def clean_csv(file: UploadFile = File(...)):
+async def clean_csv(file: UploadFile = File(...), user=Depends(verify_jwt)):
     contents = await file.read()
     try:
         raw_df = pd.read_csv(io.BytesIO(contents), encoding="latin1", delimiter=";")

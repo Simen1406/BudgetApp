@@ -30,7 +30,7 @@ const Transactions = () => {
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const selectedMonth = format (currentMonth, 'yyyy-MM');
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000".replace(/\/$/, "");
 
   
   useEffect(() => {
@@ -78,10 +78,22 @@ const Transactions = () => {
   };
 
   const handleRawCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
   const file = event.target.files?.[0];
   if (!file) return;
 
   try {
+
+    const {data, error: sessionError } = await supabase.auth.getSession();
+    const session = data.session;
+
+    if (sessionError || !session) {
+      throw new Error("user not logged in or authenticated");
+    }
+
+    const jwt = session.access_token;
+    const user = session.user;
+
     // Upload CSV to FastAPI backend
     const formData = new FormData();
     formData.append('file', file);
@@ -89,6 +101,9 @@ const Transactions = () => {
     const response = await fetch(`${API_URL}/clean-csv`, {
       method: "POST",
       body: formData,
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
     });
 
     const cleaned = await response.json();
@@ -105,16 +120,11 @@ const Transactions = () => {
     
 
     // Get Supabase session and user
-    const {
+  /*  const {
       data: { session },
       error: sessionError,
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getSession(); */
 
-    if (sessionError || !session?.user) {
-      throw new Error("Not authenticated");
-    }
-
-    const user = session.user;
 
     // Insert cleaned data with user_id
     const inserted = await insertTransactionsForUser(user.id, cleanedWithDates);
