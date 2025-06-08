@@ -12,13 +12,10 @@ import os
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 
 def verify_jwt(authorization: str = Header(...)):
-    print("✅ Received Authorization header:", authorization)
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=403, detail="Invalid authorization header")
     
     token = authorization.replace("Bearer ", "")
-    print("✅ JWT to decode:", token[:30] + "...")
-    print("✅ SUPABASE_JWT_SECRET:", repr(SUPABASE_JWT_SECRET))
 
     try:
         payload = jwt.decode(
@@ -27,7 +24,6 @@ def verify_jwt(authorization: str = Header(...)):
             algorithms=["HS256"],
             audience="authenticated"   # Only for testing
         )
-        print("✅ Decoded payload:", payload)
         return payload
     except jwt.PyJWTError as e:
         print("❌ JWT decode error:", e)
