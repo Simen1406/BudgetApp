@@ -78,7 +78,6 @@ const Transactions = () => {
   };
 
   const handleRawCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
   const file = event.target.files?.[0];
   if (!file) return;
 
@@ -86,6 +85,7 @@ const Transactions = () => {
 
     const {data, error: sessionError } = await supabase.auth.getSession();
     const session = data.session;
+    console.log("JWT:" session?.access_token);
 
     if (sessionError || !session) {
       throw new Error("user not logged in or authenticated");
