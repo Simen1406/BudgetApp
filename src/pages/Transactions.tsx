@@ -41,7 +41,7 @@ const Transactions = () => {
       }
 
       try {
-        const res = await fetch("http://localhost:8000/transaction-type");
+        const res = await fetch(`${API_URL}/transaction-type`);
         const data = await res.json();
 
         if (Array.isArray(data)) {

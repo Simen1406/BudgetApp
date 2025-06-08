@@ -4,6 +4,7 @@ export const foodStoreKeywords = [
   'meny', 
   'extra', 
   'foodora',
-  'bunnpris' 
+  'bunnpris',
+  'hope'
   // Add more mappings as needed
 ];
