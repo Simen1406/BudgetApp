@@ -2,10 +2,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { Bell, Menu, User } from 'lucide-react';
 import { useState } from 'react';
 
+//header that contains title, profile, notifications and access to menu on smaller screens.
+
+//togglesidebar is used for smallscreens to access the sidebar containing the menu
 interface HeaderProps {
   toggleSidebar: () => void;
 }
 
+//defines component and state. 
 const Header = ({ toggleSidebar }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -14,6 +18,7 @@ const Header = ({ toggleSidebar }: HeaderProps) => {
     setUserMenuOpen(!userMenuOpen);
   };
 
+  //block that renders the header
   return (
     <header className="bg-white border-b border-gray-200 z-10">
       <div className="px-4 sm:px-6 lg:px-8">

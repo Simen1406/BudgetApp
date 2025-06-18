@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
+{/*reuseable modal for editing and adding new savinggoals. set planned amount, money saved, deadline. under development and in the future will include
+syncing with transactions between users own accounts. */}
+
+//reuseable modal for editing and adding new savinggoals
 interface SavingsGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +22,7 @@ interface SavingsGoalModalProps {
   };
 }
 
+//initializes local state
 const SavingsGoalModal = ({ isOpen, onClose, onSave, goal }: SavingsGoalModalProps) => {
   const [name, setName] = useState(goal?.name || '');
   const [targetAmount, setTargetAmount] = useState(goal?.targetAmount?.toString() || '');
@@ -36,6 +41,7 @@ const SavingsGoalModal = ({ isOpen, onClose, onSave, goal }: SavingsGoalModalPro
     }
   }, [goal]);
 
+  //handles submits. saves changes and then closes modal
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -53,6 +59,7 @@ const SavingsGoalModal = ({ isOpen, onClose, onSave, goal }: SavingsGoalModalPro
   if (!isOpen) return null;
 
   return (
+    //Rendering UI layout for the modal
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">

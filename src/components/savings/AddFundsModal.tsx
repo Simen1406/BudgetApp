@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 
+//modal for savinggoals that allows for adding funds to existing savinggoals.
+
+//defines expected props for the modal
 interface AddFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -8,9 +11,11 @@ interface AddFundsModalProps {
   goalName: string;
 }
 
+//defines the component -> amount is local state for input field
 const AddFundsModal = ({ isOpen, onClose, onSave, goalName }: AddFundsModalProps) => {
   const [amount, setAmount] = useState('');
 
+  //handles the submit of the modal. 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(parseFloat(amount));
@@ -21,6 +26,7 @@ const AddFundsModal = ({ isOpen, onClose, onSave, goalName }: AddFundsModalProps
   if (!isOpen) return null;
 
   return (
+    // the rendering block for adding funds modal. Used on savinggoals page. 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">

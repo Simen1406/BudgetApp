@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
+//defines expected props. reuseable for both adding new transaction and editing
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,6 +22,7 @@ interface TransactionModalProps {
   availableTypes: string[];
 }
 
+//initializing state
 const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes }: TransactionModalProps) => {
   const [type, setType] = useState(transaction?.type || '');
   const [category, setCategory] = useState<'income' | 'expense'>(transaction?.category || 'expense');
@@ -31,6 +33,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
   const [description, setDescription] = useState(transaction?.description || '');
   const [isRecurring, setIsRecurring] = useState(transaction?.is_recurring || false);
 
+  //updates form fields when transaction props changes / resets state to default if adding a new goal
   useEffect(() => {
     if (transaction) {
       setType(transaction.type);
@@ -49,6 +52,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
     }
   }, [transaction]);
 
+  //handles submits with onSave and then closes the modal
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
@@ -65,6 +69,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, transaction, availableTypes
   if (!isOpen) return null;
 
   return (
+    //Rendering block for Transaction modal layout
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">

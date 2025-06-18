@@ -2,6 +2,7 @@ import { Budget } from '../types/budget';
 import { Transaction } from '../types/transactionsType';
 import { SavingsGoal } from '../types/savingType';
 
+//exporting mocktransactions to be used as example for guest users.
 export const mockTransactions: Transaction[] = [
   {
     id: 'mock-1',
@@ -9,6 +10,7 @@ export const mockTransactions: Transaction[] = [
     type: 'Salary',
     category: 'income',
     amount: 3000,
+    description: "matbutikk",
     date: new Date(2023, 5, 1),
   },
   {
@@ -17,6 +19,7 @@ export const mockTransactions: Transaction[] = [
     type: 'rent',
     category: 'expense',
     amount: 1200,
+    description: "felleskostnader",
     date: new Date(2023, 5, 2),
   },
   {
@@ -25,6 +28,7 @@ export const mockTransactions: Transaction[] = [
     type: 'groceries',
     category: 'expense',
     amount: 150,
+    description: "snop",
     date: new Date(2023, 5, 5),
   },
   {
@@ -33,6 +37,7 @@ export const mockTransactions: Transaction[] = [
     type: 'Utilities',
     category: 'expense',
     amount: 100,
+    description: "strømregning",
     date: new Date(2023, 5, 10),
   },
   {
@@ -41,6 +46,7 @@ export const mockTransactions: Transaction[] = [
     type: 'Dining Out',
     category: 'expense',
     amount: 50,
+    description: "restaurant",
     date: new Date(2023, 5, 15),
   },
 ];

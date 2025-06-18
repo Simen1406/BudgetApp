@@ -5,17 +5,20 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { Transaction } from '../../types/transactionsType';
 import { useState } from 'react';
 
-
+//recentTransactions collects recent transactions from transactions page and renders them on the dashboard UI
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
 }
 
+//local state which determines number of visible transactions -> set to 5 at the moment.
 const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
   const [visibleCount, setVisibleCount] = useState(5);
   const visibleTransactions = transactions.slice(0, visibleCount);
 
+  //block that renders recenttransactions in its own container on dashboard UI
   return (
+    //styles container for recent transactions with buttons for showing more/less and all transactions for current month
     <div className="card h-full">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
@@ -23,7 +26,7 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
           View all
         </Link>
       </div>
-      
+    
       <div className="overflow-hidden">
         <ul className="divide-y divide-gray-200">
           {visibleTransactions.length > 0 ? (

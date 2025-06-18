@@ -3,6 +3,8 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useState } from 'react';
 
+//main layoyt for all pages used through app.tsx routes.
+
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

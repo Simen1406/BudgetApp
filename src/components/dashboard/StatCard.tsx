@@ -1,6 +1,9 @@
 //import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { ReactNode } from 'react';
 
+//statcard for rendering total income, expense and nettotal calculated from current months transactions.
+
+//defines strucutre of the card
 interface StatCardProps {
   title: string;
   value: string;
@@ -8,6 +11,7 @@ interface StatCardProps {
   valueClassName?: string;
 }
 
+//component that renders the statcards on dashboard UI. 
 const StatCard = ({ title, value, icon, valueClassName }: StatCardProps) => {
   return (
     <div className="card hover:shadow-md transition-all">

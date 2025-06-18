@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
+//defines props for modal and handles actions like saving, opneing, closing and updating.
 interface BudgetModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +21,7 @@ interface BudgetModalProps {
   };
 }
 
+//defines chooseable categories for budgets 
 const categories = [
   'Housing',
   'Food',
@@ -31,6 +33,7 @@ const categories = [
   'Other'
 ];
 
+//intialize the local state. if budgets exist existing values are filled if not default values are used
 const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
   const [name, setName] = useState(budget?.name || '');
   const [plannedBudget, setPlannedBudget] = useState(budget?.plannedBudget?.toString() || '');
@@ -38,6 +41,7 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
   const [month, setMonth] = useState(budget?.month || new Date().toISOString().slice(0, 7));
   const [isRecurring, setIsRecurring] = useState(budget?.is_recurring || false);
 
+  //useEffect that runs whenever budget props change.
   useEffect(() => {
     if (budget) {
       setName(budget.name);
@@ -53,6 +57,7 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
     }
   }, [budget]);
 
+  //Submit handler - handles submits. it prevents page reload and converts strings to numbers. onClose is used to close the modal.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
@@ -67,7 +72,10 @@ const BudgetModal = ({ isOpen, onClose, onSave, budget }: BudgetModalProps) => {
 
   if (!isOpen) return null;
 
+  
   return (
+    //Visualization in the UI. the modal prop opens and says either edit budget or add budget depending on which button is pushed in the UI. 
+    // includes an X whihc close the modal using onClose. 
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">

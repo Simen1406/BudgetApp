@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+//savinggoals adds a container visualized on the dashboard. it creates a container with hardcoded savinggoals and does not use users savinggoals at the moment
+//under development
+
+//defines structure that savinggoals must follow
 interface SavingsGoal {
   id: string;
   name: string;
@@ -9,6 +13,7 @@ interface SavingsGoal {
   deadline: Date;
 }
 
+//hardcoded savinggoals. Mockdata for guest users and users who hasnt added their own data
 const mockGoals: SavingsGoal[] = [
   {
     id: '1',
@@ -33,6 +38,7 @@ const mockGoals: SavingsGoal[] = [
   },
 ];
 
+//component that renders a summary of savingsGoals with a viewall button that sends user to savingGoals page.
 const SavingsGoalsList = () => {
   return (
     <div className="card">

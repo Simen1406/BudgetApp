@@ -1,11 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Receipt, PieChart, Target, X } from 'lucide-react';
 
+//defines props
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
 }
 
+//defines navigations and the structure of the sidebar with paths to each destination
 const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -15,6 +17,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
   ];
 
   return (
+    //block that renders the sidebar with container, header and navigation
     <>
       {/* Mobile sidebar backdrop */}
       {isOpen && (

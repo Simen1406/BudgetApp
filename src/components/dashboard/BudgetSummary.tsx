@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+//budgetsummary for dashboard/homepage. it creates a visual box with diagram showing how money is spent and the total planned budget amount and how much is spent
+//Budgetsummary is currently under development
+
+//chart.js setup
 Chart.register(...registerables);
 
+//component that renders the budget on the dashboard
 const BudgetSummary = () => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
@@ -19,7 +24,7 @@ const BudgetSummary = () => {
       const ctx = chartRef.current.getContext('2d');
       
       if (ctx) {
-        // Create new chart
+        // Create new chart with hardcoded values not taken from actual budgets and transactions. 
         chartInstance.current = new Chart(ctx, {
           type: 'doughnut',
           data: {
@@ -77,6 +82,7 @@ const BudgetSummary = () => {
     };
   }, []);
 
+  //return block that renders the visualization
   return (
     <div className="card h-full">
       <div className="flex items-center justify-between mb-6">
