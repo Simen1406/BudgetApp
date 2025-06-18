@@ -11,27 +11,32 @@ import os
 
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 
+#function for verifying jwt with required header.
 def verify_jwt(authorization: str = Header(...)):
+    #checks that header uses standard bearer format and raises error if it doesnt
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=403, detail="Invalid authorization header")
     
+    #replace bearer with "" to get ready to extract the actual token
     token = authorization.replace("Bearer ", "")
 
+    #try block that tries to decode token using supabase jwt secret and HS256 algorithm.
     try:
         payload = jwt.decode(
             token,
             SUPABASE_JWT_SECRET,
             algorithms=["HS256"],
-            audience="authenticated"   # Only for testing
+            audience="authenticated"  
         )
         return payload
+    #if decode fails error is printed
     except jwt.PyJWTError as e:
         print("❌ JWT decode error:", e)
         raise HTTPException(status_code=403, detail=str(e))
-
+#creaetes FastAPI instance
 app = FastAPI()
 
-# Enable CORS for your frontend app
+# Enable CORS for frontend app
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "https://budgetmaster-uhey.onrender.com"],  # <- Change this to your React dev URL
@@ -40,13 +45,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+#Route to check if API is running
 @app.get("/")
 def root():
     return {"status": "API running"}
 
+#endpoint for csv cleaning. expects a file upload and use is protected with jwt, so non-authorized users cannot access this.
 @app.post("/clean-csv")
 async def clean_csv(file: UploadFile = File(...), user=Depends(verify_jwt)):
+    #reads uploaded file
     contents = await file.read()
+    
+    #loads data into to pandas df and uses imported function to clean it
     try:
         raw_df = pd.read_csv(io.BytesIO(contents), encoding="latin1", delimiter=";")
         cleaned_df = clean_bank_statement_df(raw_df)
@@ -65,15 +75,18 @@ async def clean_csv(file: UploadFile = File(...), user=Depends(verify_jwt)):
     except Exception as e:
         traceback.print_exc()
         return {"error": str(e)}
-    
+
+#Endpoint for retrieving transaction types from the cleaned csv file. these types are then used when adding transaction. They can be used to give a transaction a type -> "Food"
 @app.get("/transaction-type")
 def get_transaction_types():
     project_root = Path(__file__).resolve().parent.parent
     cleaned_csv_path = project_root / "data" / "cleaned" / "april2025cleaned.csv"
 
+    #if path to cleaned file does not exist returns error.
     if not cleaned_csv_path.exists():
         return {"error": "No cleaned CSV file found"}
     
+    #saves unique types in a variable to ensure no duplicates.
     df = pd.read_csv(cleaned_csv_path)
     unique_types = df["type"].dropna().unique().tolist()
 

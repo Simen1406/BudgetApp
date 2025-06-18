@@ -66,12 +66,14 @@ def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
 
     df = df.copy()
 
-    #delete rows that have "undertype" == 'overføring til egen konto'
+    #delete rows that have "undertype" == 'overføring til egen konto as this is unneccecary for users.
     if 'Undertype' in df.columns:
         df = df[df['Undertype'] != 'Overføring til egen konto']
 
+    #drops columns that are sensitive or not usefull.
     df = df.drop(columns=[col for col in SENSITIVE_FIELDS if col in df.columns], errors='ignore')
 
+    #rename to english column names
     df.rename(columns={
         'Utført dato': 'date',
         'Beløp ut': 'expense',
@@ -80,11 +82,14 @@ def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
         'Beskrivelse': 'description'
     }, inplace=True)
 
+    # removes rows where the date column is NaN
     df.dropna(subset=['date'], inplace=True)
 
+    # coverts strings into numbers
     df["expense"] = pd.to_numeric(df["expense"], errors="coerce").fillna(0)
     df["income"] = pd.to_numeric(df["income"], errors="coerce").fillna(0)
 
+    #categorize each row as either income or expense
     df["category"] = df["income"].gt(0).map({True: "income", False: "expense"})
     df["amount"] = df.apply(
         lambda row: row["income"] if row["category"] == "income" else abs(row["expense"]),
@@ -92,10 +97,11 @@ def clean_bank_statement_df(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-
+    #converts date strings and removes rows where coversion failed
     df['date'] = pd.to_datetime(df['date'], format='%d.%m.%Y', errors='coerce').dt.strftime('%Y-%m-%d')
     df.dropna(subset=['date'], inplace=True)
 
+    #Missing descriptions are filled as '' to ensure that all rows are not empty.
     df['description'] = df['description'].fillna('')
 
     return df[['date', 'type', 'category', 'amount', 'description']]
