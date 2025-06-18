@@ -6,20 +6,23 @@ import { useBudgetStore } from '../stores/budgetStore';
 import { useSavingsStore } from '../stores/savingsStore';
 import { mockBudget, mockGoal, mockTransactions } from '../data/mockData';
 
+//custom react hook that can be called from anywhere
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
+  // used to grab zustand store states from each store
   useEffect(() => {
     const txStore = useTransactionStore.getState();
     const budgetStore = useBudgetStore.getState();
     const goalStore = useSavingsStore.getState();
 
-    // Get the current session
+    // Get the current session -> checks if user is logged in or if guest mode is active
     const getInitialSession = async () => {
       setIsLoading(true);
       
+      //depending on session, appropriate data is loaded. user data for users and mockdata for guests
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const isGuestFlag = localStorage.getItem('isGuest') === 'true';
@@ -35,6 +38,7 @@ export function useAuth() {
         }
 
         if (session?.user && !isGuestFlag) {
+          //load user data
           await Promise.all([
             txStore.fetchTransactions(session.user.id),
             budgetStore.fetchBudgets(session.user.id),
@@ -51,7 +55,7 @@ export function useAuth() {
 
     getInitialSession();
 
-    // Listen for auth changes
+    // Listen for auth changes and updates data depending on user/guest session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
 
@@ -59,6 +63,7 @@ export function useAuth() {
       setIsGuest(isGuestFlag);
 
       if (!session?.user && isGuestFlag) {
+        //load mock data for guest
         txStore.setTransactions(mockTransactions);
         budgetStore.setBudgets([mockBudget]);
         goalStore.setGoals([mockGoal]);
@@ -71,6 +76,7 @@ export function useAuth() {
     };
   }, []);
 
+  //login for user, using password and email stored in supabase
   const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -79,6 +85,7 @@ export function useAuth() {
       });
       
       if (error) throw error;
+      //sets the session to match user and clears guest state on success.
       setIsGuest(false);
       localStorage.removeItem('isGuest');
       return { data, error: null };
@@ -88,6 +95,7 @@ export function useAuth() {
     }
   };
 
+  //login for guests -> loads mockdata
   const signInAsGuest = () => {
     setIsGuest(true);
     localStorage.setItem('isGuest', 'true');
@@ -101,6 +109,7 @@ export function useAuth() {
     goalStore.setGoals([mockGoal]);
   };
 
+  //register account for users and saves email and password in supabase. When successfull clears guest state
   const signUp = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -118,6 +127,7 @@ export function useAuth() {
     }
   };
 
+  //Logs user out via Supabase and resets stores to prevent leaks
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();

@@ -1,7 +1,9 @@
 import { supabase } from './supabase'
 import { Transaction } from '../types/transactionsType'
 
+// retrieves transactions that matches userId
 export async function getTransactionsByUser(userId: string): Promise<Transaction[]> {
+  //query for transactions table in supabase.
   const { data, error } = await supabase
     .from('transactions')
     .select('*')
@@ -20,6 +22,7 @@ export async function getTransactionsByUser(userId: string): Promise<Transaction
   }))
 }
 
+//inserts transactions that matches userId and ensures correct date format. 
 export async function insertTransactionsForUser(
   userId: string,
   transactions: Omit<Transaction, 'id' | 'user_id'>[]
