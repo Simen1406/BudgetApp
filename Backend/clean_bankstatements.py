@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import io
 
+#Next on the agenda is to make the cleaning function available for raw bankstatements from different banks (they have different structure and column names).
 
 #Columns to remove
 SENSITIVE_FIELDS = ['Bokført dato', 'Rentedato', 'Fra konto', 'Avsender', 'Til konto', 'Mottakernavn', 'Valuta', 'Status', 'Melding/KID/Fakt.nr']
