@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { UserPlus } from 'lucide-react';
 
+//page for registering account. sent here when pushing create new account.
+
 const Register = () => {
   const navigate = useNavigate();
   const { signUp } = useAuth();

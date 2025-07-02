@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LogIn } from 'lucide-react';
 
+//component for handling login state and logic
 const Login = () => {
   const navigate = useNavigate();
   const { signIn, signInAsGuest } = useAuth();
@@ -12,11 +13,13 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  //Handles actions when logging in
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
+    //try block to check if login is succesfull and then navigates to dashboard or returns an error and let user try again.
     try {
       const { error } = await signIn(email, password);
       
@@ -33,6 +36,7 @@ const Login = () => {
     }
   };
 
+  //When logging in as guesy send users directly to dashboard
   const handleGuestLogin = () => {
     signInAsGuest();
     navigate('/dashboard');

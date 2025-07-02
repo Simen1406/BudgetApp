@@ -8,6 +8,7 @@ import { formatCurrency } from '../utils/formatCurrency';
 import { useAuth } from '../hooks/useAuth';
 import { toast} from "react-hot-toast"
 
+//component that handles states and logic
 const SavingsGoals = () => {
   const { goals, addGoal, updateGoal, deleteGoal, addFunds } = useSavingsStore();
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
@@ -16,28 +17,33 @@ const SavingsGoals = () => {
   const { user } = useAuth();
   
   
-  // Sort goals based on selected criterion
+  // Sort goals based on which goal is closest to being reached. 
   const sortedGoals = [...goals].sort((a, b) => {
     const progressA = (a.savedAmount / a.targetAmount) * 100;
     const progressB = (b.savedAmount / b.targetAmount) * 100;
     return progressB - progressA;
     });
   
-  // Calculate total savings
+  // Calculate total savings and totalt target savings.
   const totalSaved = goals.reduce((sum, goal) => sum + goal.savedAmount, 0);
   const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+
+  //shows how far along user is for completing saving goals in %
   const overallProgress = (totalSaved / totalTarget) * 100;
 
+  //handles edits of existing saving goals and at the moment also adding new ones. this should be changed in the future
   const handleEdit = (goal: typeof goals[0]) => {
     setSelectedGoal(goal);
     setIsGoalModalOpen(true);
   };
 
+  //handles the adding of funds to existing goals
   const handleAddFunds = (goal: typeof goals[0]) => {
     setSelectedGoal(goal);
     setIsAddFundsModalOpen(true);
   };
 
+  //handler for deleteion with a popup that requires users to authorize deletion
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this savings goal?')) {
       deleteGoal(id)
@@ -46,13 +52,13 @@ const SavingsGoals = () => {
     }
   };
 
+  //handles the saving of goals and checks if goal already exist before saving, if that happens an error will pop up in the UI -> handles no duplicates. 
   const handleSaveGoal = (goalData: {
     name: string;
     targetAmount: number;
     savedAmount: number;
     deadline: Date;
     }) => {
-    console.log("handlesaveGoal called with:", goalData)
 
     //Check if saving goal with same name/id exist and if it appears display error message in the UI
     const nameExists = goals.some(g => g.name.toLocaleLowerCase() === goalData.name.toLocaleLowerCase());
@@ -68,8 +74,7 @@ const SavingsGoals = () => {
       .catch(() => toast.error("Failed to updated goal"));
     } else {
       if (user?.id) {
-        console.log('Saving new goal:', goalData);
-        console.log('User ID:', user?.id);
+        
 
 
         addGoal(goalData, user.id)

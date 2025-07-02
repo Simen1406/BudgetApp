@@ -7,16 +7,23 @@ import BudgetModal from '../components/budgets/BudgetModal';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useTransactionStore } from '../stores/transactionStore';
 
-
+//pulls functions and states from budget store 
 const Budgets = () => {
   const { budgets, loading, fetchAndSyncFoodBudget, fetchBudgets, addBudget, updateBudget, deleteBudget } = useBudgetStore();
   //const {currentMonth, setCurrentMonth} = useBudgetStore();
+
+  //sets and updates selected month
   const currentMonth = useBudgetStore(state => state.currentMonth)
   const setCurrentMonth = useBudgetStore(state => state.setCurrentMonth)
+
+  //manage modal states and handles which budget to edit
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<typeof budgets[0] | null>(null);
+
+  //gets the current user
   const { user } = useAuth();
 
+  //retrieves user transactions using exported function from transaction store
   const {transactions} = useTransactionStore();
   //const memorizedTransactions = useMemo(() => transactions, [transactions]);
 
@@ -24,7 +31,7 @@ const Budgets = () => {
   //const monthName = format(currentMonth, 'MMMM yyyy');
 
 
-  //fetch budgets and sync with transaction for current month
+  //fetch budgets and sync with transaction for current month. 
   useEffect(() => {
     if (!user || transactions.length) return;
 
@@ -41,6 +48,7 @@ const Budgets = () => {
     runInitialLoad();
   },[user, transactions, selectedMonth, currentMonth]);
 
+  //use effect that updates food budget any time transactions or month changes. 
   useEffect(() => {
   if (!user || !transactions.length) return;
 
@@ -92,21 +100,24 @@ const Budgets = () => {
   }
 */}
   
-  // Calculate totals
+  // Calculate totals and show planned vs spent money
   const totalPlanned = budgets.reduce((sum, budget) => sum + budget.plannedBudget, 0);
   const totalActual = budgets.reduce((sum, budget) => sum + budget.moneySpent, 0);
 
+  //opens modal and handles editing. budget data is prefilled.
   const handleEdit = (budget: typeof budgets[0]) => {
     setSelectedBudget(budget);
     setIsModalOpen(true);
   };
 
+  //confirm deleteion handler. popup that users most approve. 
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this budget?')) {
       deleteBudget(id);
     }
   };
 
+  //handles saving logic. If editing existing budget it updates it, if not creates a new one. 
   const handleSave = async (budgetData: {
     name: string;
     plannedBudget: number;
@@ -124,6 +135,7 @@ const Budgets = () => {
         await addBudget(budgetData, user.id);
       }
 
+      //closes modal after completed actions. also checks for any errors.
       setIsModalOpen(false);
       setSelectedBudget(null);
     } catch (error) {
@@ -131,6 +143,7 @@ const Budgets = () => {
     }
   };
   
+  //rendering of visualization in the UI.
   return (
     <div className="space-y-6 animate-slide-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -150,6 +163,7 @@ const Budgets = () => {
               setCurrentMonth(newDate);
             }}
           >
+            {/*buttons for changing months*/}
             Previous Month
           </button>
           <button

@@ -15,7 +15,7 @@ import { merge } from 'chart.js/helpers';
 
 
 
-
+//component that handles states and logic
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactionStore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,7 +32,7 @@ const Transactions = () => {
   const selectedMonth = format (currentMonth, 'yyyy-MM');
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000".replace(/\/$/, "");
 
-  
+  //use effect that checks user -> guest/logged in user. is guest use mock transaction types.
   useEffect(() => {
     const fetchTransactionTypes = async () => {
       if (isGuest) {
@@ -56,6 +56,7 @@ const Transactions = () => {
     fetchTransactionTypes();
   }, []);
   
+  //filters for filtering transaction for current month (unless recurring transactions). at the moment filters for income and expenses are the only ones functioning.
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -71,24 +72,29 @@ const Transactions = () => {
     return matchesSearch && matchesType && matchesMonth;
   });
 
+  //calculate total income and expenese, nettotal and also number of transactions for income and expenses. 
   const { totalIncome, totalExpenses, netTotal, incomeCount, expenseCount } = calculateTransactionTotals(transactions, selectedMonth);
 
+  //Exporting is not in use at the moment
   const handleExport = () => {
     exportTransactionsToCSV(filteredTransactions);
   };
 
+  //handles importing of raw csv files.
   const handleRawCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //gets uploaded file from input.
   const file = event.target.files?.[0];
   if (!file) return;
 
+  //try block to get supabase session and check for user authentication
   try {
 
     const {data, error: sessionError } = await supabase.auth.getSession();
     const session = data.session;
-    console.log("JWT:", session?.access_token);
 
+    //if any error occur the code stops and returns error message.
     if (sessionError || !session) {
-      throw new Error("user not logged in or authenticated");
+      throw new Error("user not logged in or not authenticated");
     }
 
     const jwt = session.access_token;
@@ -98,6 +104,7 @@ const Transactions = () => {
     const formData = new FormData();
     formData.append('file', file);
 
+    //send request to API and authenticates user. if guest or not authenticated an error message will occur
     const response = await fetch(`${API_URL}/clean-csv`, {
       method: "POST",
       body: formData,
@@ -126,7 +133,7 @@ const Transactions = () => {
     } = await supabase.auth.getSession(); */
 
 
-    // Insert cleaned data with user_id
+    // Insert cleaned data with user_id and date
     const inserted = await insertTransactionsForUser(user.id, cleanedWithDates);
 
     if (!inserted) {
@@ -149,22 +156,26 @@ const Transactions = () => {
   }
 };
 
+  //handles saving of reccuring transactions
   const handleSaveRecurringTransaction = (TransactionData) => {
     addTransaction({...TransactionData, is_recurring: true });
     setIsRecurringModalOpen(false);
   };
 
+  //handles editing
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
   };
 
+  //handles deletes iwth popup
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this transaction?')) {
       deleteTransaction(id);
     }
   };
 
+  //handles saving edited transactions and added transactions
   const handleSave = (transactionData: Omit<Transaction, 'id'>) => {
     if (editingTransaction) {
       updateTransaction(editingTransaction.id, transactionData);

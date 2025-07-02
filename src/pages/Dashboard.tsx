@@ -11,19 +11,20 @@ import RecentTransactions from '../components/dashboard/RecentTransactions';
 import BudgetSummary from '../components/dashboard/BudgetSummary';
 import SavingsGoalsList from '../components/dashboard/SavingsGoalsList';
 
-// Mock data (will be replaced with actual data from backend)
+// Mock data (will be replaced with actual data from backend, if user is logged in. Under development).
 import { mockTransactions } from '../data/mockData';
 
 import { Transaction } from '../types/transactionsType';
 import { calculateTransactionTotals } from '../utils/transactionCalculator';
 
+//component containing states, logic and rendering.
 const Dashboard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const currentDate = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const selectedMonth = format(currentMonth, 'yyyy-MM');
   
-
+  //checks user session and fetches transactions from supabase if user is logged in.
   useEffect(() => {
     const fetchTransactions = async () => {
       const {
@@ -31,23 +32,27 @@ const Dashboard = () => {
         error: sessionError,
       } = await supabase.auth.getSession();
 
+      //sets mock transactions when is not authenticated or guest
       if (sessionError || !session?.user) {
         console.warn("Guest user or not authenticated, loading mock data");
         setTransactions(mockTransactions);
         return;
       }
       
+      //fetch user transactions from supabase
       const { data, error } = await supabase
         .from("transactions")
         .select("*")
         .eq("user_id", session.user.id);
 
+      // if any error occur or it returned nothing sets mock transactions
       if (error || !data) {
         console.error("Error fetching transactions:", error);
         setTransactions(mockTransactions);
         return;
       }
 
+      //Checks for transaction length. If new user mockdata will be rendered untill data is imported/added by user
       if (data.length === 0) {
         console.log("No transactions found for user, using mock data");
         setTransactions(mockTransactions);
@@ -58,16 +63,18 @@ const Dashboard = () => {
     fetchTransactions();
     }, []);
 
+    //cache for transactions - might be redundant
     const filteredTransactions = useMemo(() => {
       const sourceTransactions = transactions.length === 0 ? mockTransactions : transactions;
 
+      //filters transactions by month and ensures that the array only include transactions for current month
       return transactions.filter((t) => {
         const transactionMonth = format(new Date(t.date), 'yyyy-MM');
         return transactionMonth === selectedMonth;
       });
     }, [transactions, currentMonth]);
     
-    //calculate totals
+    //calculate totals using function from transactionCalculator. 
     const {
       totalIncome,
       totalExpenses,
@@ -80,6 +87,7 @@ const Dashboard = () => {
     <div className="space-y-6 animate-slide-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
+          {/*Header and month visualization*/}
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500">{format(currentDate, 'MMMM d, yyyy')}</p>
         </div>
@@ -114,7 +122,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Stats grid */}
+      {/* Stats grid visualizes calculated totals from transaction calculator helper */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Income"
