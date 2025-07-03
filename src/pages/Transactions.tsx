@@ -36,7 +36,7 @@ const Transactions = () => {
   useEffect(() => {
     const fetchTransactionTypes = async () => {
       if (isGuest) {
-        setAvailableTypes(mockTransactionTypes);
+        setAvailableTypes(defaultTransactionTypes);
         return;
       }
 
@@ -47,9 +47,15 @@ const Transactions = () => {
         if (Array.isArray(data)) {
           const mergedTypes = Array.from(new Set([...defaultTransactionTypes, ...data]));
           setAvailableTypes(mergedTypes);
+        } else {
+          //if backend returns nothing fall back to default transaction types
+          setAvailableTypes(defaultTransactionTypes);
         }
+
       } catch (err) {
         console.error("Error fetching transaction types:", err);
+        // in case of fetching error fall back to default types
+        setAvailableTypes(defaultTransactionTypes);
       }
     };
 

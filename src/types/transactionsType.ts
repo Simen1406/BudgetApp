@@ -15,6 +15,9 @@ export const defaultTransactionTypes = [
   'Rent',
   'Utilities',
   'insurance',
-  'felleskostnader'
+  'felleskostnader',
+  'food',
+  'transportation',
+  'entertainment',
   //More can be added later
 ]
