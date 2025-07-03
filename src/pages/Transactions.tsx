@@ -228,17 +228,6 @@ const Transactions = () => {
 
             {/* Spacing */}
             <div className="ml-4"></div>
-              <button 
-                className="btn btn-primary flex items-center"
-                onClick={() => {
-                  setEditingTransaction(null);
-                  setIsModalOpen(true);
-                }}
-              >
-                {/*transaction button*/}
-                <Plus className="h-4 w-4 mr-2" />
-                Add Transaction
-              </button>
             </div>
           </div>
       
@@ -322,7 +311,7 @@ const Transactions = () => {
                   //open recurring transaction modal
                   }}
                 >
-                  Add recurring transaction
+                  Add transaction
                 </button>
 
                 <div
