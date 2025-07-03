@@ -8,8 +8,13 @@ import traceback
 from fastapi import Header, HTTPException, Depends
 import jwt
 import os
+from supabase import create_client
 
+SUPABASE_URL = os.getenv("VITE_SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("VITE_SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 #function for verifying jwt with required header.
 def verify_jwt(authorization: str = Header(...)):
@@ -91,3 +96,48 @@ def get_transaction_types():
     unique_types = df["type"].dropna().unique().tolist()
 
     return unique_types
+
+
+@app.post("/reset-guest")
+def reset_guest_data(authorization: str = Header(...)):
+    #Verify that its guest user:
+    payload = verify_jwt(authorization)
+    user_id = payload["sub"]
+    email = payload.get("email")
+
+    if email != "guest@budgetmaster.com":
+        raise HTTPException(status_code=403, detail="Only guest user can trigger data reset")
+    
+    try:
+        #delete input data
+        supabase.table("transactions").delete.eq("user_id", user_id).execute()
+        supabase.table("savings_goals").delete.eq("user_id", user_id).execute()
+        supabase.table("budgets").delete.eq("user_id", user_id).execute()
+
+        #insert example data
+
+        supabase.table("budgets").insert([
+            {"user_id": user_id, "name": "food", "plannedbudget": 5500, "moneySpent": 0, "month": "2025-07", "is-recurring": True},
+            {"user_id": user_id, "name": "Monthly expenses", "plannedbudget": 25000, "moneySpent": 0, "month": "2025-07", "is-recurring": True}     
+        ]).execute()
+
+        supabase.table("savings_goals").insert([
+            {"user_id": user_id, "targetAmount": 15000, "deadline": "2025-09-01", "name": "vacation", "savedAmount": 0},
+            {"user_id": user_id, "targetAmount": 1000000, "deadline": "2040-09-01", "name": "retirement", "savedAmount": 0}
+        ]).execute()
+
+        supabase.table("transactions").insert([
+            {"user_id": user_id, "date":" 2025-07-01", "type": "food", "category": "expense", "amount": 500, "description": "kiwi", "is_recurring": False},
+            {"user_id": user_id, "date":" 2025-07-07", "type": "food", "category": "expense", "amount": 1500, "description": "kiwi", "is_recurring": False},
+            {"user_id": user_id, "date":" 2025-07-13", "type": "food", "category": "expense", "amount": 741, "description": "rema", "is_recurring": False},
+            {"user_id": user_id, "date":" 2025-07-27", "type": "food", "category": "expense", "amount": 2034, "description": "meny", "is_recurring": False},
+            {"user_id": user_id, "date":" 2025-07-15", "type": "loan_payment", "category": "expense", "amount": 15000, "description": "Montly payment", "is_recurring": True},
+            {"user_id": user_id, "date":" 2025-07-10", "type": "utilities", "category": "expense", "amount": 500, "description": "power bill", "is_recurring": False},
+            {"user_id": user_id, "date":" 2025-07-15", "type": "insurance", "category": "expense", "amount": 500, "description": "car insurance", "is_recurring": True},
+            {"user_id": user_id, "date":" 2025-07-01", "type": "salary", "category": "income", "amount": 35000, "description": "job salary", "is_recurring": True},
+            {"user_id": user_id, "date":" 2025-07-01", "type": "rent", "category": "income", "amount": 5000, "description": "rent income", "is_recurring": True},
+        ]).execute()
+
+    except Exception as e:
+        print("error during reset")
+        raise HTTPException(status_code=500, detail=str(e))

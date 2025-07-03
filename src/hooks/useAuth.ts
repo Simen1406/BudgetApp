@@ -6,6 +6,8 @@ import { useBudgetStore } from '../stores/budgetStore';
 import { useSavingsStore } from '../stores/savingsStore';
 import { mockBudget, mockGoal, mockTransactions } from '../data/mockData';
 
+const API_URL = import.meta.env.VITE_API_URL
+
 //custom react hook that can be called from anywhere
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -130,6 +132,29 @@ export function useAuth() {
   //Logs user out via Supabase and resets stores to prevent leaks
   const signOut = async () => {
     try {
+      const session =await supabase.auth.getSession();
+      const jwt = session.data?.session?.access_token;
+      const email = session.data?.session?.user?.email;
+      
+      if (email === "guest@budgetmaster.com" && jwt) {
+        try {
+          const res = await fetch(`${API_URL}/reset-guest`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+            },
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            console.error("Guest reset failed:", err);
+          } else {
+            console.log("Guest reset successful");
+          }
+        } catch (resetError) {
+          console.error("error reaching reset endpoint:", resetError);
+        }
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
@@ -140,8 +165,9 @@ export function useAuth() {
 
       setIsGuest(false);
       localStorage.removeItem('isGuest');
-    } catch (error) {
-      console.error('Error signing out:', error);
+
+  } catch (error) {
+    console.error('Error signing out:', error);
     }
   };
 
