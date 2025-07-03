@@ -349,21 +349,21 @@ const Transactions = () => {
         </div>
       
       {/* 🟡 Standalone Totals Container */}
-    <div className="bg-white shadow-sm rounded-lg p-4 my-4 border border-gray-200">
-      <h3 className="text-lg font-semibold mb-2">Summary for {format(currentMonth, 'MMMM yyyy')}</h3>
+    <div className="bg-white shadow-sm rounded-lg p-6 my-6 border border-gray-300 text-base">
+      <h3 className="text-2xl font-semibold mb-5 text-center">Summary for {format(currentMonth, 'MMMM yyyy')}</h3>
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <p className="text-sm text-gray-600">Total Income:</p>
+        <div className="flex-1 flex flex-col item-center text-center">
+          <p className="text-lg text-gray-600 font-bold">Total Income:</p>
           <p className="text-green-600 font-bold">{totalIncome.toFixed(1)}</p>
           <p className="text-xs text-gray-500">{incomeCount} {incomeCount === 1 ? 'income transaction' : 'income transactions'}</p>
         </div>
-        <div className="flex-1">
-          <p className="text-sm text-gray-600">Total Expense:</p>
+        <div className="flex-1 flex flex-col item-center text-center">
+          <p className="text-lg text-gray-600 font-bold">Total Expense:</p>
           <p className="text-red-600 font-bold">{totalExpenses.toFixed(1)}</p>
           <p className="text-xs text-gray-500">{expenseCount} {expenseCount === 1 ? 'expense transaction' : 'expense transactions'}</p>
         </div>
-        <div className="flex-1">
-          <p className="text-sm text-gray-600">Net Total:</p>
+        <div className="flex-1 flex flex-col item-center text-center">
+          <p className="text-lg text-gray-600 font-bold">Net Total:</p>
           <p className={netTotal >= 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
             {netTotal.toFixed(1)}
           </p>
