@@ -353,20 +353,21 @@ const Transactions = () => {
       <h3 className="text-2xl font-semibold mb-5 text-center">Summary for {format(currentMonth, 'MMMM yyyy')}</h3>
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 flex flex-col item-center text-center">
-          <p className="text-lg text-gray-600 font-bold">Total Income:</p>
-          <p className="text-green-600 font-bold">{totalIncome.toFixed(1)}</p>
+          <p className="text-lg text-gray-600 font-bold mb-1.5">Total Income:</p>
+          <p className="text-lg text-green-600 font-bold">{totalIncome.toFixed(1)}</p>
           <p className="text-xs text-gray-500">{incomeCount} {incomeCount === 1 ? 'income transaction' : 'income transactions'}</p>
         </div>
         <div className="flex-1 flex flex-col item-center text-center">
-          <p className="text-lg text-gray-600 font-bold">Total Expense:</p>
-          <p className="text-red-600 font-bold">{totalExpenses.toFixed(1)}</p>
+          <p className="text-lg text-gray-600 font-bold mb-1.5">Total Expense:</p>
+          <p className="text-lg text-red-600 font-bold">{totalExpenses.toFixed(1)}</p>
           <p className="text-xs text-gray-500">{expenseCount} {expenseCount === 1 ? 'expense transaction' : 'expense transactions'}</p>
         </div>
         <div className="flex-1 flex flex-col item-center text-center">
-          <p className="text-lg text-gray-600 font-bold">Net Total:</p>
-          <p className={netTotal >= 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+          <p className="text-lg text-gray-600 font-bold mb-1.5">Net Total:</p>
+          <p className={netTotal >= 0 ? 'text-lg text-green-600 font-bold' : 'text-lg text-red-600 font-bold'}>
             {netTotal.toFixed(1)}
           </p>
+          <p className="text-xs text-gray-500">{expenseCount + incomeCount} {expenseCount + incomeCount === 1 ? 'totale transactions' : 'total transactions'}</p>
         </div>
       </div>
     </div>
