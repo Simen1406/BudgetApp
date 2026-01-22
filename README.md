@@ -1,6 +1,6 @@
 # 💸 Budgeting App
 
-A personal budgeting and transaction tracking app that lets you import bank statements, clean sensitive data, and visualize income and expenses.
+A personal budgeting and transaction tracking app that lets you import bank statements, clean sensitive data, and visualize + categorize income and expenses.
 
 ## ✨ Features
 
